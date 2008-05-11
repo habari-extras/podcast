@@ -49,7 +49,12 @@ class Podcast extends Plugin
 	*/
 	function action_admin_theme_get_publish( $handler, $theme )
 	{
-		if( $handler->handler_vars['content_type'] == 'podcast' ) {
+		extract( $handler->handler_vars );
+		if( !isset($content_type) && isset($slug) ) {
+			$post= Post::get(array('slug'=>$slug));
+			$content_type= Post::type_name($post->content_type);
+		}
+		if( $content_type == 'podcast' ) {
 			$handler->fetch( 'podcast' );
 		}
 	}
