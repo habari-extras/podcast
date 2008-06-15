@@ -48,10 +48,26 @@ class Podcast extends Plugin
 	{
 		if ($plugin_id == $this->plugin_id()){
 			switch ($action){
-				case 'addfeeds' :
+				case 'managefeeds' :
 					$ui = new FormUI('podcast');
-					$ui->append('textmulti', 'fields', 'podcast__feeds', 'Feeds:');
+
+					$addfeed = $ui->append('fieldset', 'addfeed', 'Add Feed');					
+					$addfeed->append('text', 'feedname', 'null:null', 'New Feed Name:');
+					$addfeed->append('select', 'feedtype', 'null:null', 'New Feed Type:');
+					$addfeed->feedtype->options = array('itunes');
+
+					$feeddata = array_keys(Options::get('podcast__feeds'));
+					if(count($feeddata) > 0) {
+						$editfeed = $ui->append('fieldset', 'editfeed', 'Manage Feeds');
+						$editfeed->append('static', 'managelabel', '<p>' . _t('Uncheck the feeds that you wish to delete.') . '</p>');
+						$feeds = $editfeed->append('checkboxes', 'feeds', 'null:null', 'Feeds');
+						$feeds->options = array_combine($feeddata, $feeddata);
+						$feeds->value = $feeddata; 
+					}
+
 					$ui->append('submit', 'submit', 'Submit');
+
+					$ui->on_success(array($this, 'manage_feeds'));
 					$ui->out();
 					break;
 			}
@@ -68,10 +84,38 @@ class Podcast extends Plugin
 	public function filter_plugin_config($actions, $plugin_id)
 	{
 		if ($plugin_id == $this->plugin_id()){
-			$actions['addfeeds'] = _t('Add Feeds');
+			$actions['managefeeds'] = _t('Manage Feeds');
+			$feeds = Options::get('podcast__feeds');
+			foreach($feeds as $feedname => $feedtype) {
+				$actions['feed_' . md5($feedname)] = sprintf(_t('Edit "%s" feed'), $feedname);
+			}
 		}
 
 		return $actions;
+	}
+	
+	/**
+	 * Process the manage feeds form submission
+	 * 
+	 * @param FormUI $form The form with the feed information
+	 */
+	public function manage_feeds($form)
+	{
+		$feeds = Options::get('podcast__feeds');
+		$feedsout = array();
+		if(count($feeds) > 0 ) {
+			foreach($feeds as $feedname => $feedtype) {
+				if(in_array((string)$feedname, $form->feeds->value)) {
+					$feedsout[$feedname] = $feedtype;
+				}
+			}
+		}
+		if($form->feedname->value != '') {
+			$feedsout[$form->feedname->value] = $form->feedtype->value;
+		}
+		Options::set('podcast__feeds', $feedsout);
+
+		Utils::redirect();
 	}
 
 	/**
