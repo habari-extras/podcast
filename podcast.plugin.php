@@ -37,6 +37,26 @@ class Podcast extends Plugin
 			Post::add_new_type('podcast');
 		}
 	}
+	
+	/**
+	* This function is incomplete
+	*/
+	function action_admin_header()
+	{
+		$feeds = Options::get('podcast__feeds');
+		$output = '';
+		foreach($feeds as $feed => $feedtype) {
+			$feedmd5 = md5($feed);
+			$output .= <<< MEDIAJS
+$.extend(habari.media.output.audio_mpeg3, {
+	add_to_{$feed}: function(fileindex, fileobj) {
+		$('#enclosure_{$feedmd5}').val(fileobj.url);
+	}
+});
+MEDIAJS;
+		}
+		echo "<script type=\"text/javascript\">{$output}</script>";
+	}
 
 	/**
 	* Respond to the user selecting an action on the plugin page
@@ -132,7 +152,7 @@ class Podcast extends Plugin
 			$output = '';
 			$control_id = 0;
 			$postfields = $form->publish_controls->append('fieldset', 'enclosures', 'Enclosures');
-			foreach($feeds as $feed) {
+			foreach($feeds as $feed => $feedtype) {
 				$control_id = md5($feed);
 				$fieldname = "enclosure_{$control_id}";
 				$customfield = $postfields->append('text', $fieldname, 'null:null', $feed);
