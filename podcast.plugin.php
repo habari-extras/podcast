@@ -179,7 +179,7 @@ MEDIAJS;
 	*/
 	public function action_form_publish($form, $post)
 	{
-		if($post->content_type === Post::type('podcast') ) {
+		if( $form->content_type->value == Post::type('podcast') ) {
 			$feeds = Options::get('podcast__feeds');
 			$output = '';
 			$control_id = 0;
@@ -204,8 +204,7 @@ MEDIAJS;
 	*/
 	public function action_publish_post($post, $form)
 	{
-		if( $post->content_type === Post::type( 'podcast' ) ) {
-	Utils::debug( $form->get_values());
+		if( $post->content_type == Post::type( 'podcast' ) ) {
 			$feeds = Options::get('podcast__feeds');
 			foreach($feeds as $feed => $feedtype) {
 				$control_id = md5($feed);
