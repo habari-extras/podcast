@@ -9,25 +9,69 @@
 
 class Podcast extends Plugin
 {
-/*	private $itunesCategory = array(
-		'Arts' => array( 'Design', 'Fashion &amp; Beauty', 'Food', 'Literature', 'Performing Arts', 'Visual Arts' ),
-		'Business' => array( 'Business News', 'Careers', 'Investing', 'Management &amp; Marketing', 'Shopping' ),
-		'Comedy',
-		'Education' => array( 'Education Technology', 'Higher Education', 'K-12', 'Language Courses', 'Training' ),
-		'Games &amp; Hobbies' => array( 'Automotive', 'Aviation', 'Hobbies', 'Other Games', 'Video Games' ),
-		'Government &amp; Organizations' => array( 'Local', 'National', 'Non-Profit', 'Regional' ),
-		'Health' => array( 'Alternative Health', 'Fitness &amp; Nutrition', 'Self-Help', 'Sexuality' ),
-		'Kids &amp; Family',
-		'Music',
-		'News &amp; Politics',
-		'Religion &amp; Spirituality' => array( 'Buddhism', 'Christianity', 'Hinduism', 'Islam', 'Judaism', 'Other', 'Spirituality' ),
-		'Science &amp; Medicine' => array( 'Medicine', 'Natural Sciences', 'Social Sciences' ),
-		'Society &amp; Culture' => array( 'History', 'Personal Journals', 'Philosophy', 'Places &amp; Travel' ),
-		'Sports &amp; Recreation' => array( 'Amateur', 'College &amp; High School', 'Outdoor', 'Professional' ),
-		'Technology' => array( 'Gadgets', 'Tech News', 'Podcasting', 'Software How-To' ),
-		'TV &amp; Film',
+	const PODCAST_ITUNES = 0;
+
+/*
+	private $itunes_categories = array(
+		'0 => '',
+		1 => 'Arts' => array( 'Design', 'Fashion &amp; Beauty', 'Food', 'Literature', 'Performing Arts', 'Visual Arts' ),
+		2 => 'Business' => array( 'Business News', 'Careers', 'Investing', 'Management &amp; Marketing', 'Shopping' ),
+		3 => 'Comedy',
+		4 => 'Education' => array( 'Education Technology', 'Higher Education', 'K-12', 'Language Courses', 'Training' ),
+		5 => 'Games &amp; Hobbies' => array( 'Automotive', 'Aviation', 'Hobbies', 'Other Games', 'Video Games' ),
+		6 => 'Government &amp; Organizations' => array( 'Local', 'National', 'Non-Profit', 'Regional' ),
+		7 => 'Health' => array( 'Alternative Health', 'Fitness &amp; Nutrition', 'Self-Help', 'Sexuality' ),
+		8 => 'Kids &amp; Family',
+		9 => 'Music',
+		10 => 'News &amp; Politics',
+		11 => 'Religion &amp; Spirituality' => array( 'Buddhism', 'Christianity', 'Hinduism', 'Islam', 'Judaism', 'Other', 'Spirituality' ),
+		12 => 'Science &amp; Medicine' => array( 'Medicine', 'Natural Sciences', 'Social Sciences' ),
+		13 => 'Society &amp; Culture' => array( 'History', 'Personal Journals', 'Philosophy', 'Places &amp; Travel' ),
+		14 => 'Sports &amp; Recreation' => array( 'Amateur', 'College &amp; High School', 'Outdoor', 'Professional' ),
+		15 => 'Technology' => array( 'Gadgets', 'Tech News', 'Podcasting', 'Software How-To' ),
+		16 => 'TV &amp; Film',
 	);
 */
+	private $itunes_categories = array(
+		0 => '',
+		1 => 'Arts',
+		2 => 'Business',
+		3 => 'Comedy',
+		4 => 'Education',
+		5 => 'Games & Hobbies',
+		6 => 'Government & Organizations',
+		7 => 'Health',
+		8 => 'Kids & Family',
+		9 => 'Music',
+		10 => 'News & Politics',
+		11 => 'Religion & Spirituality',
+		12 => 'Science & Medicine',
+		13 => 'Society & Culture',
+		14 => 'Sports & Recreation',
+		15 => 'Technology',
+		16 => 'TV & Film',
+	);
+
+	private $itunes_subcategories = array(
+		'Arts' => array( 'Design', 'Fashion & Beauty', 'Food', 'Literature', 'Performing Arts', 'Visual Arts' ),
+		'Business' => array( 'Business News', 'Careers', 'Investing', 'Management & Marketing', 'Shopping' ),
+		'Education' => array( 'Education Technology', 'Higher Education', 'K-12', 'Language Courses', 'Training' ),
+		'Games & Hobbies' => array( 'Automotive', 'Aviation', 'Hobbies', 'Other Games', 'Video Games' ),
+		'Government &amp; Organizations' => array( 'Local', 'National', 'Non-Profit', 'Regional' ),
+		'Health' => array( 'Alternative Health', 'Fitness & Nutrition', 'Self-Help', 'Sexuality' ),
+		'Religion & Spirituality' => array( 'Buddhism', 'Christianity', 'Hinduism', 'Islam', 'Judaism', 'Other', 'Spirituality' ),
+		'Science & Medicine' => array( 'Medicine', 'Natural Sciences', 'Social Sciences' ),
+		'Society & Culture' => array( 'History', 'Personal Journals', 'Philosophy', 'Places &amp; Travel' ),
+		'Sports & Recreation' => array( 'Amateur', 'College &amp; High School', 'Outdoor', 'Professional' ),
+		'Technology' => array( 'Gadgets', 'Tech News', 'Podcasting', 'Software How-To' ),
+	);
+
+	private $itunes_explicit = array(
+		0 => 'Clean',
+		1 => 'No',
+		2 => 'Yes',
+	);
+
 	/**
 	*
 	* Return information about this plugin
@@ -62,6 +106,8 @@ class Podcast extends Plugin
 	*/
 	function action_admin_header()
 	{
+		Stack::add('admin_stylesheet', array($this->get_url() . '/podcast.css', 'screen'));
+
 		$feeds = Options::get('podcast__feeds');
 		$output = '';
 		foreach($feeds as $feed => $feedtype) {
@@ -181,15 +227,13 @@ MEDIAJS;
 	{
 		if( $form->content_type->value == Post::type('podcast') ) {
 			$feeds = Options::get('podcast__feeds');
-			$output = '';
-			$control_id = 0;
-			$postfields = $form->publish_controls->append('fieldset', 'enclosures', 'Enclosures');
+			$postfields = $form->publish_controls->append('fieldset', 'enclosures', _t( 'Enclosures' ) );
 			foreach($feeds as $feed => $feedtype) {
-				$control_id = md5($feed);
-				$fieldname = "enclosure_{$control_id}";
-				$customfield = $postfields->append('text', $fieldname, 'null:null', $feed);
-				$customfield->value = isset($post->info->{$feed}) ? $post->info->{$feed} : '';
-				$customfield->template = 'tabcontrol_text';
+				switch( $feedtype ) {
+				case self::PODCAST_ITUNES:
+					$this->itunes_form( $form, $post, $feed );
+					break;
+				}
 			}
 		}
 	}
@@ -207,11 +251,13 @@ MEDIAJS;
 		if( $post->content_type == Post::type( 'podcast' ) ) {
 			$feeds = Options::get('podcast__feeds');
 			foreach($feeds as $feed => $feedtype) {
-				$control_id = md5($feed);
-				$fieldname = "enclosure_{$control_id}";
-				$customfield = $form->$fieldname;
-				$post->info->{$feed} = $customfield->value;
+				switch( $feedtype ) {
+					case self::PODCAST_ITUNES:
+						$this->get_itunes_settings( $form, $post, $feed );
+					break;
+				}
 			}
+
 		}
 	}
 
@@ -326,18 +372,20 @@ MEDIAJS;
 				$pubdate= $item->addChild ( 'pubDate', date( DATE_RFC822, strtotime( $post->pubdate ) ) );
 				$guid= $item->addChild( 'guid', $post->guid );
 				$guid->addAttribute( 'isPermaLink', 'false' );
-				$enclosure = $item->addChild( 'enclosure' );
-				$enclosure->addAttribute( 'url', $post->info->feed );
-				$enclosure->addAttribute( 'length', filesize( $post->info->feed ) );
-				$enclosure->addAttribute( 'type', 'audio/mpeg' );
-				$category = $item->addChild( 'Category', '' );
 
-				$itunes_author = $item->addChild( 'xmlns:itunes:author', $post->author->displayname );
-				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', 'Clean' );
-				$itunes_subtitle = $item->addChild( 'xmlns:itunes:subtitle', '' );
-				$itunes_summary = $item->addChild( 'xmlns:itunes:summary', '' );
-				$itunes_duration = $item->addChild( 'xmlns:itunes:duration', '' );
-				$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', '' );
+				list($url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block ) = $post->info->$feed;
+				$enclosure = $item->addChild( 'enclosure' );
+				$enclosure->addAttribute( 'url', $url );
+				$enclosure->addAttribute( 'length', $size );
+				$enclosure->addAttribute( 'type', 'audio/mpeg' );
+
+				$itunes_author = $item->addChild( 'xmlns:itunes:author', htmlspecialchars( $post->author->displayname, ENT_COMPAT, 'UTF-8' ) );
+				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', $explicit );
+				$itunes_subtitle = $item->addChild( 'xmlns:itunes:subtitle', htmlspecialchars( $subtitle, ENT_COMPAT, 'UTF-8' ) );
+				$itunes_summary = $item->addChild( 'xmlns:itunes:summary', htmlspecialchars( $summary, ENT_COMPAT, 'UTF-8' ) );
+				$itunes_duration = $item->addChild( 'xmlns:itunes:duration', $duration );
+				$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', htmlspecialchars( $keywords, ENT_COMPAT, 'UTF-8' ) );
+				$itunes_block = $item->addChild( 'xmlns:itunes:block', $block );
 
 				Plugins::act( 'podcast_add_post', $item, $post );
 			}
@@ -357,6 +405,79 @@ Atom goes here.
 ATOM;
 	}
 
+	protected function itunes_form( $form, $post, $feed )
+	{
+		$postfields = $form->publish_controls->enclosures;
+		if( isset( $post->info->$feed ) ) {
+			list($url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block ) = $post->info->$feed;
+		}
+		$control_id = md5($feed);
+		$fieldname = "{$control_id}_settings";
+		$feed_fields = $postfields->append( 'fieldset', $fieldname, _t( 'Settings for ' ) . $feed );
+		$feed_fields->class = 'podcast-settings';
+
+		$fieldname = "enclosure_{$control_id}";
+		$customfield = $feed_fields->append('text', $fieldname, 'null:null', _t( 'Podcast file:' ), 'tabcontrol_text' );
+		$customfield->value = isset( $url ) ? $url : '';
+
+		$fieldname = "explicit_{$control_id}";
+		$customfield = $feed_fields->append( 'select', $fieldname, 'null:null', _t( 'Explicit:' ) );
+		$customfield->template = 'tabcontrol_select';
+		$customfield->options = $this->itunes_explicit;
+		if( isset( $explicit ) ) $customfield->value = $explicit;
+
+/*		$fieldname = "category_{$control_id}";
+		$customfield = $feed_fields->append( 'select', $fieldname, 'null:null', _t( 'Category:' ) );
+		$customfield->template = 'tabcontrol_select';
+		$customfield->options = $this->itunes_categories;
+		$customfield->value = isset( $category ) ? $category : $this->itunes_categories[0];
+*/
+
+		$fieldname = "subtitle_{$control_id}";
+		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Subtitle:' ), 'tabcontrol_text' );
+		$customfield->value = isset( $subtitle ) ? $subtitle : '';
+
+		$fieldname = "keywords_{$control_id}";
+		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Keywords:' ), 'tabcontrol_text' );
+		$customfield->value = isset( $keywords ) ? $keywords : '';
+
+		$fieldname = "summary_{$control_id}";
+		$customfield = $feed_fields->append( 'textarea', $fieldname, 'null:null', _t( 'Summary:' ), 'tabcontrol_textarea' );
+		$customfield->value = isset( $summary ) ? $summary : '';
+
+		$fieldname = "block_{$control_id}";
+		$customfield = $feed_fields->append( 'checkbox', $fieldname, 'null:null', _t( 'Summary:' ), 'tabcontrol_checkbox' );
+		$customfield->value = isset( $block ) ? $block : '';
+	}
+
+	protected function get_itunes_settings( $form, $post, $feed )
+	{
+		$control_id = md5($feed);
+
+		$fieldname = "enclosure_{$control_id}";
+		$url = $form->$fieldname->value;
+
+		$fieldname = "explicit_{$control_id}";
+		$explicit = $form->$fieldname->value;
+
+		$fieldname = "subtitle_{$control_id}";
+		$subtitle = $form->$fieldname->value;
+
+		$fieldname = "keywords_{$control_id}";
+		$keywords = $form->$fieldname->value;
+
+		$fieldname = "summary_{$control_id}";
+		$summary = $form->$fieldname->value;
+
+		$size = strlen( file_get_contents( $url ) );
+
+		$duration = '';
+		
+		$fieldname = "block_{$control_id}";
+		$block = $form->$fieldname->value;
+
+		$post->info->$feed = array( $url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block );
+	}
 }
 
 ?>
