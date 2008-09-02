@@ -1,0 +1,18 @@
+.podcast-settings{
+	border: 2px solid white;
+	width: 75%;
+	margin-left: 200px;
+}
+
+.podcast-settings input[type="text"] {
+	width: 60%;
+}
+
+.podcast-settings select {
+	width: 60%;
+}
+
+.podcast-settings textarea {
+	width: 60%;
+	height: 10em;
+}
