@@ -7,8 +7,11 @@
  * @copyright 2008
  */
 
+require_once( 'mp3info.php' );
+
 class Podcast extends Plugin
 {
+	private $file_name = '';
 	const PODCAST_ITUNES = 0;
 
 
@@ -172,7 +175,7 @@ class Podcast extends Plugin
 $.extend(habari.media.output.audio_mpeg3, {
 	add_to_{$feed}: function(fileindex, fileobj) {
 		$('#enclosure_{$feedmd5}').val(fileobj.url);
-		habari.editor.insertSelection('<!-- file:'+fileobj.url+' -->');
+		habari.editor.insertSelection('<!-- file:' + fileobj.url+' -->'+'<a href="'+fileobj.url+' rel="enclosure">'+fileobj.title+'</a>');
 	}
 });
 MEDIAJS;
@@ -295,7 +298,7 @@ MEDIAJS;
 		}
 	}
 
-	public function filter_post_content_out( $content )
+	function filter_post_content_out( $content )
 	{
 		preg_match_all( '/<!-- file:(.*) -->/i', $content, $matches, PREG_PATTERN_ORDER );
 		$matches_obj = new ArrayObject( $matches[1] );
@@ -307,12 +310,12 @@ MEDIAJS;
 		return $content;
 	}
 
-	public function embed_player( $file )
+	function embed_player( $file )
 	{
 		$player = '<p><object width="300" height="20">';
 		$player .= '<param name="movie" value="' . $this->get_url() . '/players/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . basename( $file, '.mp3' ) . '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" />';
 		$player .= '<param name="wmode" value="transparent" />';
-		$player .= '<embed src="' . $this->get_url() . '/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . basename( $file, '.mp3' ). '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" type="application/x-shockwave-flash" wmode="transparent" width="300" height="20"></embed>';
+		$player .= '<embed src="' . $this->get_url() . '/players/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . basename( $file, '.mp3' ). '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" type="application/x-shockwave-flash" wmode="transparent" width="300" height="20"></embed>';
 		$player .= '</object></p>';
 
 		return $player;
@@ -373,15 +376,6 @@ MEDIAJS;
 		return $rules;
 	}
 
-	public function filter_theme_act_display_podcast( $handled, $theme )
-	{
-		$default_filters= array(
-			'content_type' => Post::type( 'podcast' ),
-		);
-		$theme->act_display_post( $default_filters );
-		return true;
-	}
-
 	public function filter_template_user_filters( $where )
 	{
 		if( is_array( $where['content_type'] ) ) {
@@ -412,7 +406,17 @@ MEDIAJS;
 		
 		exit;
 	}
-	
+
+	public function filter_theme_act_display_podcast( $handled, $theme )
+	{
+		$default_filters= array( 
+			'content_type' => Post::type( 'podcast' )
+		);
+
+		$theme->act_display_post( $default_filters );
+		return true;
+	}
+
 	/**
 	* Produce RSS output for the named feed.
 	*
@@ -435,6 +439,7 @@ MEDIAJS;
 	 * Creates a basic RSS-format XML structure with channel and items elements
 	 * @return SimpleXMLElement The requested RSS document
 	 */
+//	public function create_rss_wrapper( $feed_name )
 	public function create_rss_wrapper( $feed_name )
 	{
 		$xml= new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
@@ -649,7 +654,7 @@ ATOM;
 
 		$fieldname = "keywords_{$control_id}";
 		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Keywords:', 'podcast' ), 'tabcontrol_text' );
-		$customfield->value = isset( $keywords ) ? $keywords : $post->tags ;
+		$customfield->value = isset( $keywords ) ? $keywords : isset( $post->tags ) ?$post->tags : '' ;
 
 		$fieldname = "summary_{$control_id}";
 		$customfield = $feed_fields->append( 'textarea', $fieldname, 'null:null', _t( 'Summary:', 'podcast' ), 'tabcontrol_textarea' );
@@ -679,15 +684,17 @@ ATOM;
 		$fieldname = "summary_{$control_id}";
 		$summary = $form->$fieldname->value;
 
-		$size = strlen( file_get_contents( $url ) );
-
+		$size = 0;
 		$duration = '';
-		
+		$mp3 = new MP3Info( $url, TRUE );
+		$size = $mp3->get_size();
+		$duration = $mp3->format_minutes_seconds( $mp3->get_duration() );
+
 		$fieldname = "block_{$control_id}";
 		$block = $form->$fieldname->value;
 
 		$post->info->$feed = array( $url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block );
 	}
-}
 
+}
 ?>
