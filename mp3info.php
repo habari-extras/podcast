@@ -11,17 +11,19 @@ class MP3Info
 
 	// MP3 frame information. Many of these are not yet used.
 	private $num_frames;
-	private  $duration;	// in seconds
-	private  $mpeg_version;
-	private  $mpeg_layer;
-	private  $has_CRC;
-	private  $bitrate;	// average if VBR, 0 if "free"
-	private  $samplerate;
-	private  $samples_per_frame;
-	private  $channel_mode;
-	private  $emphasis;
-	private  $is_copyrighted;
-	private  $is_original;
+	private $duration;	// in seconds
+	private $mpeg_version;
+	private $mpeg_layer;
+	private $has_CRC;
+	private $bitrate;	// average
+	private $samplerate;
+	private $samples_per_frame;
+	private $channel_mode;
+	private $mode_extension;
+	private $emphasis;
+	private $is_copyrighted;
+	private $is_original;
+	private $is_private;
 
 	function __construct( $file_name, $is_local )
 	{
@@ -67,11 +69,18 @@ class MP3Info
 						$this->samples_per_frame = $hdr->samples_per_frame;
 						// Get samplerate
 						$this->samplerate = $hdr->samplerate;
+						$this->has_CRC = $hdr->has_CRC;
+						$this->channel_mode = $hdr->channel_mode;
+						$this->mode_extension = $hdr->mode_ext;
+						$this->emphasis = $hdr->emphasis;
+						$this->is_copyrighted = $hdr->copyright;
+						$this->is_original = $hdr->original;
+						$this->is_private = $hdr->is_private;
 						if( $this->mpeg_layer == MP3FrameHeader::MPEG_LAYER_1 ) {
-							$framesize = ( 12 * $frame_bitrate / $this->samplerate + $hdr->padded ) * 4;
+							$framesize = ( 12 * $frame_bitrate / $this->samplerate + $hdr->is_padded ) * 4;
 						}
 						else {
-							$framesize = 144 * $frame_bitrate / $this->samplerate + $hdr->padded;
+							$framesize = 144 * $frame_bitrate / $this->samplerate + $hdr->is_padded;
 						}
 						$pos += $framesize - 2;
 					}
@@ -84,10 +93,10 @@ class MP3Info
 						$total_bitrate += $frame_bitrate;
 
 						if( $this->mpeg_layer == MP3FrameHeader::MPEG_LAYER_1 ) {
-							$framesize = ( 12 * $frame_bitrate / $this->samplerate + $hdr->padded ) * 4;
+							$framesize = ( 12 * $frame_bitrate / $this->samplerate + $hdr->is_padded ) * 4;
 						}
 						else {
-							$framesize = 144 * $frame_bitrate / $this->samplerate + $hdr->padded;
+							$framesize = 144 * $frame_bitrate / $this->samplerate + $hdr->is_padded;
 						}
 						$pos += $framesize - 2;
 					}
@@ -101,7 +110,7 @@ class MP3Info
 
 		// if at least one frame was read, the MP3 is considered valid
 		if ( $this->num_frames > 0 ) {
-//			$this->bitrate = (int)($total_bitrate / $this->num_frames ); // average the bitrate
+			$this->bitrate = (int)($total_bitrate / $this->num_frames ); // average the bitrate
 //			$this->duration = (int)($this->size / ( $this->bitrate / 8 ) );
 			$this->duration = ($this->num_frames * $this->samples_per_frame / $this->samplerate);
 		}
