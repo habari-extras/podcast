@@ -12,6 +12,7 @@ require_once( 'mp3info.php' );
 class Podcast extends Plugin
 {
 	private $file_name = '';
+	private $current_url = '';
 	const PODCAST_ITUNES = 0;
 
 
@@ -405,7 +406,8 @@ MEDIAJS;
 	*/
 	public function action_handler_podcast($handler_vars) {
 		extract($handler_vars); // Expecting: $entire_match $name $feed_type
-		
+		$this->current_url = Site::get_url('habari') . DIRECTORY_SEPARATOR . $entire_match;
+
 		switch($feed_type) {
 			case 'rss':
 				$this->produce_rss($name);
@@ -454,16 +456,22 @@ MEDIAJS;
 	public function create_rss_wrapper( $feed_name )
 	{
 		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
+		$xml->addAttribute( 'xmlns:xmlns:atom', 'http://www.w3.org/2005/Atom' );
 		$xml->addAttribute( 'xmlns:xmlns:itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd' );
 		$xml->addAttribute(  'version', '2.0' );
 		$channel = $xml->addChild( 'channel' );
 		$title = $channel->addChild( 'title', Options::get('title') );
 		$link = $channel->addChild( 'link', Site::get_url('habari') );
+		$atom_link = $channel->addChild( 'xmlns:atom:link' );
+		$atom_link->addAttribute( 'href', $this->current_url );
+		$atom_link->addAttribute( 'rel', 'self' );
+		$atom_link->addAttribute( 'type', 'application/rss+xml' );
 		$lang = $channel->addChild( 'language', strlen( Options::get( 'locale' ) ) ? Options::get( 'locale' ) : 'en-us' );
 		if ( $tagline= Options::get( 'tagline' ) ) {
 			$description= $channel->addChild( 'description', $tagline );
 		}
-		$pubDate= $channel->addChild( 'lastBuildDate', date( DATE_RFC822, strtotime( Post::get()->pubdate ) ) );
+//		$pubDate= $channel->addChild( 'lastBuildDate', date( DATE_RFC822, strtotime( Post::get()->pubdate ) ) );
+		$pubDate= $channel->addChild( 'lastBuildDate', date( 'r', strtotime( Post::get()->pubdate ) ) );
 		$generator= $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
 
 		$itunes = Options::get( "podcast__{$feed_name}_itunes" );
@@ -528,7 +536,8 @@ MEDIAJS;
 				$title= $item->addChild( 'title', $post->title );
 				$link= $item->addChild( 'link', $post->permalink );
 				$description= $item->addChild( 'description', $post->content );
-				$pubdate= $item->addChild ( 'pubDate', date( DATE_RFC822, strtotime( $post->pubdate ) ) );
+//				$pubdate= $item->addChild ( 'pubDate', date( DATE_RFC822, strtotime( $post->pubdate ) ) );
+				$pubdate= $item->addChild ( 'pubDate', date( 'r', strtotime( $post->pubdate ) ) );
 				$guid= $item->addChild( 'guid', $post->guid );
 				$guid->addAttribute( 'isPermaLink', 'false' );
 
