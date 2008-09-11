@@ -11,7 +11,6 @@ require_once( 'mp3info.php' );
 
 class Podcast extends Plugin
 {
-	private $file_name = '';
 	private $current_url = '';
 	const PODCAST_ITUNES = 0;
 
@@ -470,7 +469,6 @@ MEDIAJS;
 		if ( $tagline= Options::get( 'tagline' ) ) {
 			$description= $channel->addChild( 'description', $tagline );
 		}
-//		$pubDate= $channel->addChild( 'lastBuildDate', date( DATE_RFC822, strtotime( Post::get()->pubdate ) ) );
 		$pubDate= $channel->addChild( 'lastBuildDate', date( 'r', strtotime( Post::get()->pubdate ) ) );
 		$generator= $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
 
