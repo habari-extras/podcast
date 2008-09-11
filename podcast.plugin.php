@@ -168,10 +168,11 @@ class Podcast extends Plugin
 		Stack::add('admin_stylesheet', array($this->get_url() . '/podcast.css', 'screen'));
 
 		$feeds = Options::get('podcast__feeds');
-		$output = '';
-		foreach($feeds as $feed => $feedtype) {
-			$feedmd5 = md5($feed);
-			$output .= <<< MEDIAJS
+		if( isset( $feeds ) ) {
+			$output = '';
+			foreach($feeds as $feed => $feedtype) {
+				$feedmd5 = md5($feed);
+				$output .= <<< MEDIAJS
 $.extend(habari.media.output.audio_mpeg3, {
 	add_to_{$feed}: function(fileindex, fileobj) {
 		$('#enclosure_{$feedmd5}').val(fileobj.url);
@@ -179,8 +180,9 @@ $.extend(habari.media.output.audio_mpeg3, {
 	}
 });
 MEDIAJS;
+			}
+			echo "<script type=\"text/javascript\">{$output}</script>";
 		}
-		echo "<script type=\"text/javascript\">{$output}</script>";
 	}
 
 	/**
@@ -214,7 +216,11 @@ MEDIAJS;
 					$addfeed->append('select', 'feedtype', 'null:null', _t( 'New Feed Type:', 'podcast' ) );
 					$addfeed->feedtype->options = array('itunes');
 
-					$feeddata = array_keys(Options::get('podcast__feeds'));
+					$feeds = Options::get( 'podcast_feeds' );
+					$feeddata = array();
+					if( isset( $feeds ) ) {
+						$feeddata = array_keys(  $feeds );
+					}
 					if(count($feeddata) > 0) {
 						$editfeed = $ui->append('fieldset', 'editfeed', _t( 'Manage Feeds', 'podcast' ) );
 						$editfeed->append('static', 'managelabel', '<p>' . _t('Uncheck the feeds that you wish to delete.', 'podcast' ) . '</p>');
@@ -244,8 +250,10 @@ MEDIAJS;
 		if ($plugin_id == $this->plugin_id()){
 			$actions['managefeeds'] = _t('Manage Feeds');
 			$feeds = Options::get('podcast__feeds');
-			foreach($feeds as $feedname => $feedtype) {
-				$actions['feed_' . md5($feedname)] = sprintf(_t('Edit "%s" feed', 'podcast' ), $feedname);
+			if( isset( $feeds ) ) {
+				foreach($feeds as $feedname => $feedtype) {
+					$actions['feed_' . md5($feedname)] = sprintf(_t('Edit "%s" feed', 'podcast' ), $feedname);
+				}
 			}
 		}
 
@@ -352,6 +360,9 @@ MEDIAJS;
 	*/
 	public function filter_rewrite_rules( $rules ) {
 		$feeds = Options::get('podcast__feeds');
+		if( !isset( $feeds ) ) {
+			return $rules;
+		}
 		$feed_regex = implode('|', array_keys( $feeds ) );
 		$rules[] = new RewriteRule(array(
 			'name' => 'podcast',
@@ -442,12 +453,13 @@ MEDIAJS;
 //	public function create_rss_wrapper( $feed_name )
 	public function create_rss_wrapper( $feed_name )
 	{
-		$xml= new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
+		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
 		$xml->addAttribute( 'xmlns:xmlns:itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd' );
 		$xml->addAttribute(  'version', '2.0' );
-		$channel= $xml->addChild( 'channel' );
-		$title= $channel->addChild( 'title', Options::get('title') );
-		$link= $channel->addChild( 'link', Site::get_url('habari') );
+		$channel = $xml->addChild( 'channel' );
+		$title = $channel->addChild( 'title', Options::get('title') );
+		$link = $channel->addChild( 'link', Site::get_url('habari') );
+		$lang = $channel->addChild( 'language', strlen( Options::get( 'locale' ) ) ? Options::get( 'locale' ) : 'en-us' );
 		if ( $tagline= Options::get( 'tagline' ) ) {
 			$description= $channel->addChild( 'description', $tagline );
 		}
@@ -465,7 +477,7 @@ MEDIAJS;
 		$itunes_explicit = $channel->addChild( 'xmlns:itunes:explicit', $itunes['explicit'] );
 		$itunes_image = $channel->addChild( 'xmlns:itunes:image' );
 		$itunes_image->addAttribute( 'href', $itunes['image'] );
-		if( $itunes['main_category'] ) {
+		if( strlen( $itunes['main_category'] ) ) {
 			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
 			$categories = explode( ':', $itunes['main_category'] );
 			$itunes_category->addAttribute( 'text', $categories[0] );
@@ -474,7 +486,7 @@ MEDIAJS;
 				$child->addAttribute( 'text', $categories[1] );
 			}
 		}
-		if( $itunes['category_2'] ) {
+		if( isset( $itunes['category_2'] ) ) {
 			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
 			$categories = explode( ':', $itunes['category_2'] );
 			$itunes_category->addAttribute( 'text', $categories[0] );
@@ -483,7 +495,7 @@ MEDIAJS;
 				$child->addAttribute( 'text', $categories[1] );
 			}
 		}
-		if( $itunes['category_3'] ) {
+		if( strlen( $itunes['category_3'] ) ) {
 			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
 			$categories = explode( ':', $itunes['category_3'] );
 			$itunes_category->addAttribute( 'text', $categories[0] );
@@ -492,10 +504,8 @@ MEDIAJS;
 				$child->addAttribute( 'text', $categories[1] );
 			}
 		}
-		if ( $itunes['block'] ) {
-			$itunes_block = $channel->addChild( 'xmlns:itunes:block', 'Yes' );
-		}
-		if ( isset( $itunes['redirect'] ) ) {
+		$itunes_block = $channel->addChild( 'xmlns:itunes:block', $itunes['block'] ? 'Yes' : 'No' );
+		if ( strlen( $itunes['redirect'] ) ) {
 			$itunes_redirect = $channel->addChild( 'xmlns:itunes:new-feed-url', $itunes['redirect'] );
 		}
 
@@ -529,12 +539,12 @@ MEDIAJS;
 				$enclosure->addAttribute( 'type', 'audio/mpeg' );
 
 				$itunes_author = $item->addChild( 'xmlns:itunes:author', $post->author->displayname );
-				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', $explicit );
 				$itunes_subtitle = $item->addChild( 'xmlns:itunes:subtitle', $subtitle );
 				$itunes_summary = $item->addChild( 'xmlns:itunes:summary', $summary );
 				$itunes_duration = $item->addChild( 'xmlns:itunes:duration', $duration );
+				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', $explicit );
 				$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', $keywords );
-				$itunes_block = $item->addChild( 'xmlns:itunes:block', $block );
+				$itunes_block = $item->addChild( 'xmlns:itunes:block', $block ? 'Yes' : 'No' );
 
 				Plugins::act( 'podcast_add_post', $item, $post );
 			}
@@ -582,7 +592,7 @@ ATOM;
 
 		$explicit = $itunes->append( 'select', 'explicit', 'null:null', _t( 'Explicit Content: ', 'podcast' ) );
 		$explicit->options = $this->itunes_explicit;
-		$explicit->value = $options['explicit'] ? $options['explicit'] : $this->itunes_explicit[0];
+		$explicit->value = isset( $options['explicit'] ) ? array_search( $options['explicit'], $this->itunes_explicit ) : 0;
 
 		$image = $itunes->append( 'text', 'image', 'null:null', _t( 'Podcast Artwork URL: ', 'podcast' ) );
 		$image->value = $options['image'] ? $options['image'] : '';
@@ -592,15 +602,17 @@ ATOM;
 
 		$main_category = $itunes->append( 'select', 'main_category', 'null:null', _t( 'Podcast Category: ', 'podcast' ) );
 		$main_category->options = $this->itunes_categories;
-		$main_category->value = $options['main_category'] ? $options['main_category'] : $this->itunes_categories[1];
+		$main_category->value = isset( $options['main_category'] ) ? array_search( $options['main_category'], $this->itunes_categories ) : 0;
 
 		$category_2 = $itunes->append( 'select', 'category_2', 'null:null', _t( 'Podcast Category: ', 'podcast' ) );
 		$category_2->options = $this->itunes_categories;
-		$category_2->value = $options['category_2'] ? $options['category_2'] : $this->itunes_categories[0];
+		$category_2->value = isset( $options['category_2'] ) ? array_search( $options['category_2'], $this->itunes_categories ) : 0;
 
 		$category_3 = $itunes->append( 'select', 'category_3', 'null:null', _t( 'Podcast Category: ', 'podcast' ) );
 		$category_3->options = $this->itunes_categories;
-		$category_3->value = $options['category_3'] ? $options['category_3'] : $this->itunes_categories[0];
+		$category_3->value = isset( $options['category_3'] ) ? array_search( $options['category_3'], $this->itunes_categories ) : 0;
+
+		$redirect = $itunes->append( 'text', 'redirect', 'null:null', _t( 'New podcast url: ' ) );
 
 		$ui->append( 'submit', 'submit', _t( 'Submit' ) );
 		$ui->on_success( array( $this, 'itunes_updated' ), $it );
@@ -621,6 +633,7 @@ ATOM;
 		'main_category' => $this->itunes_categories[$ui->main_category->value],
 		'category_2' => $this->itunes_categories[$ui->category_2->value],
 		'category_3' => $this->itunes_categories[$ui->category_3->value],
+		'redirect' => $ui->redirect->value,
 		);
 
 		Options::set( "podcast__{$it->key()}_itunes", $options );
@@ -650,7 +663,7 @@ ATOM;
 		$customfield = $feed_fields->append( 'select', $fieldname, 'null:null', _t( 'Explicit:', 'podcast' ) );
 		$customfield->template = 'tabcontrol_select';
 		$customfield->options = $this->itunes_explicit;
-		if( isset( $explicit ) ) $customfield->value = $explicit;
+		$customfield->value = isset( $explicit ) ? array_search( $explicit, $this->itunes_explicit )  : 0;
 
 		$fieldname = "keywords_{$control_id}";
 		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Keywords:', 'podcast' ), 'tabcontrol_text' );
@@ -662,7 +675,7 @@ ATOM;
 
 		$fieldname = "block_{$control_id}";
 		$customfield = $feed_fields->append( 'checkbox', $fieldname, 'null:null', _t( 'Block:', 'podcast' ), 'tabcontrol_checkbox' );
-		$customfield->value = isset( $block ) ? $block : '';
+		$customfield->value = isset( $block ) ? $block : 0;
 	}
 
 	protected function get_post_itunes_settings( $form, $post, $feed )
