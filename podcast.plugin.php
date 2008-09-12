@@ -131,16 +131,17 @@ class Podcast extends Plugin
 	/**
 	* This function is incomplete
 	*/
-	function action_admin_header()
+	function action_admin_header( $theme )
 	{
-		Stack::add('admin_stylesheet', array($this->get_url() . '/podcast.css', 'screen'));
+		if( $theme->page == 'publish' ) {
+			Stack::add('admin_stylesheet', array($this->get_url() . '/podcast.css', 'screen'));
 
-		$feeds = Options::get('podcast__feeds');
-		if( isset( $feeds ) ) {
-			$output = '';
-			foreach($feeds as $feed => $feedtype) {
-				$feedmd5 = md5($feed);
-				$output .= <<< MEDIAJS
+			$feeds = Options::get('podcast__feeds');
+			if( isset( $feeds ) ) {
+				$output = '';
+				foreach($feeds as $feed => $feedtype) {
+					$feedmd5 = md5($feed);
+					$output .= <<< MEDIAJS
 $.extend(habari.media.output.audio_mpeg3, {
 	add_to_{$feed}: function(fileindex, fileobj) {
 		$('#enclosure_{$feedmd5}').val(fileobj.url);
@@ -148,8 +149,9 @@ $.extend(habari.media.output.audio_mpeg3, {
 	}
 });
 MEDIAJS;
+				}
+				echo "<script type=\"text/javascript\">{$output}</script>";
 			}
-			echo "<script type=\"text/javascript\">{$output}</script>";
 		}
 	}
 
@@ -184,7 +186,7 @@ MEDIAJS;
 					$addfeed->append('select', 'feedtype', 'null:null', _t( 'New Feed Type:', 'podcast' ) );
 					$addfeed->feedtype->options = array('itunes');
 
-					$feeds = Options::get( 'podcast_feeds' );
+					$feeds = Options::get( 'podcast__feeds' );
 					$feeddata = array();
 					if( isset( $feeds ) ) {
 						$feeddata = array_keys(  $feeds );
@@ -224,7 +226,6 @@ MEDIAJS;
 				}
 			}
 		}
-
 		return $actions;
 	}
 	
@@ -398,7 +399,8 @@ MEDIAJS;
 
 		$rules[] = new RewriteRule(array(
 			'name' => 'display_podcasts',
-			'parse_regex' => '%podcast/(?P<name>' . $feed_regex . ')/(?:page/(?P<page>\d+))?/?$%i',
+//			'parse_regex' => '%podcast/(?P<name>' . $feed_regex . ')/(?:page/(?P<page>\d+))?/?$%i',
+			'parse_regex' => '%^podcast/(?P<name>' . $feed_regex . ')(?:/page/(?P<page>\d+))?/?$%i',
 			'build_str' => 'podcast/{$name}(/page/{$page})',
 			'handler' => 'UserThemeHandler',
 			'action' => 'display_podcasts',
@@ -436,13 +438,19 @@ MEDIAJS;
 	
 	public function filter_theme_act_display_podcasts( $handled, $theme )
 	{
+		$paramarray['fallback'] = array(
+			'podcast.multiple',
+			'multiple',
+			'home',
+		);
+		
 		$default_filters = array(
 			'content_type' => Post::type( 'podcast' ),
 		);
 
 		$paramarray['user_filters'] = $default_filters;
 
-		$theme->act_display_entries( $paramarray );
+		$theme->act_display( $paramarray );
 		return true;
 	}
 
@@ -463,7 +471,7 @@ MEDIAJS;
 				$this->produce_atom($name);
 				break;
 		}
-		
+
 		exit;
 	}
 
@@ -489,7 +497,6 @@ MEDIAJS;
 	 * Creates a basic RSS-format XML structure with channel and items elements
 	 * @return SimpleXMLElement The requested RSS document
 	 */
-//	public function create_rss_wrapper( $feed_name )
 	public function create_rss_wrapper( $feed_name )
 	{
 		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
@@ -572,7 +579,6 @@ MEDIAJS;
 				$title= $item->addChild( 'title', $post->title );
 				$link= $item->addChild( 'link', $post->permalink );
 				$description= $item->addChild( 'description', $post->content );
-//				$pubdate= $item->addChild ( 'pubDate', date( DATE_RFC822, strtotime( $post->pubdate ) ) );
 				$pubdate= $item->addChild ( 'pubDate', date( 'r', strtotime( $post->pubdate ) ) );
 				$guid= $item->addChild( 'guid', $post->guid );
 				$guid->addAttribute( 'isPermaLink', 'false' );
