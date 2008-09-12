@@ -380,7 +380,8 @@ MEDIAJS;
 			'build_str' => '{$slug}(/page/{$page})',
 			'handler' => 'UserThemeHandler',
 			'action' => 'display_podcast',
-			'priority' => 7,
+//			'priority' => 7,
+			'priority' => 101,
 			'is_active' => 1,
 			'description' => 'Displays a single podcast',
 		));
@@ -389,11 +390,13 @@ MEDIAJS;
 
 	public function filter_template_user_filters( $where )
 	{
-		if( is_array( $where['content_type'] ) ) {
-			$where['content_type'] = array_merge( $where['content_type'], array( Post::type( 'podcast' ) ) );
-		}
-		else {
-			$where['content_type'] = array( $where['content_type'], Post::type('podcast') );
+		if( isset( $where['content_type'] ) ) {
+			if( is_array( $where['content_type'] ) ) {
+				$where['content_type'] = array_merge( $where['content_type'], array( Post::type( 'podcast' ) ) );
+			}
+			else {
+				$where['content_type'] = array( $where['content_type'], Post::type('podcast') );
+			}
 		}
 		return $where;
 	}
