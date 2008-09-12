@@ -85,41 +85,7 @@ class Podcast extends Plugin
 		'Technology:Software How-To',
 		'TV & Film',
 	);
-/*
-	private $itunes_categories = array(
-		0 => '',
-		1 => 'Arts',
-		2 => 'Business',
-		3 => 'Comedy',
-		4 => 'Education',
-		5 => 'Games & Hobbies',
-		6 => 'Government & Organizations',
-		7 => 'Health',
-		8 => 'Kids & Family',
-		9 => 'Music',
-		10 => 'News & Politics',
-		11 => 'Religion & Spirituality',
-		12 => 'Science & Medicine',
-		13 => 'Society & Culture',
-		14 => 'Sports & Recreation',
-		15 => 'Technology',
-		16 => 'TV & Film',
-	);
 
-	private $itunes_subcategories = array(
-		'Arts' => array( 'Design', 'Fashion & Beauty', 'Food', 'Literature', 'Performing Arts', 'Visual Arts' ),
-		'Business' => array( 'Business News', 'Careers', 'Investing', 'Management & Marketing', 'Shopping' ),
-		'Education' => array( 'Education Technology', 'Higher Education', 'K-12', 'Language Courses', 'Training' ),
-		'Games & Hobbies' => array( 'Automotive', 'Aviation', 'Hobbies', 'Other Games', 'Video Games' ),
-		'Government &amp; Organizations' => array( 'Local', 'National', 'Non-Profit', 'Regional' ),
-		'Health' => array( 'Alternative Health', 'Fitness & Nutrition', 'Self-Help', 'Sexuality' ),
-		'Religion & Spirituality' => array( 'Buddhism', 'Christianity', 'Hinduism', 'Islam', 'Judaism', 'Other', 'Spirituality' ),
-		'Science & Medicine' => array( 'Medicine', 'Natural Sciences', 'Social Sciences' ),
-		'Society & Culture' => array( 'History', 'Personal Journals', 'Philosophy', 'Places &amp; Travel' ),
-		'Sports & Recreation' => array( 'Amateur', 'College &amp; High School', 'Outdoor', 'Professional' ),
-		'Technology' => array( 'Gadgets', 'Tech News', 'Podcasting', 'Software How-To' ),
-	);
-*/
 	private $itunes_explicit = array(
 		0 => 'Clean',
 		1 => 'No',
@@ -158,6 +124,8 @@ class Podcast extends Plugin
 	function action_init()
 	{
 		$this->load_text_domain( 'podcast' );
+		$this->add_template( 'podcast.multiple', dirname(__FILE__) . '/templates/plugin.multiple.php' );
+		$this->add_template( 'podcast.single', dirname(__FILE__) . '/templates/plugin.single.php' );
 	}
 
 	/**
@@ -352,6 +320,48 @@ MEDIAJS;
 		}
 	}
 
+	// Use the templates in the plugin's template directory if they don't exist in the theme
+	public function filter_include_template_file( $template_path, $template_name, $class )
+	{
+
+		if ( $template_name == 'podcast.single' ) {
+			if ( ! file_exists( $template_path ) ) {
+				switch ( strtolower($class) ) {
+					case 'rawphpengine':
+						$template_path= dirname( $this->get_file() ) . '/templates/podcast.single.php';
+						break;
+				}
+			}
+		}
+		else if ( $template_name == 'podcast.multiple' ) {
+			if( ! file_exists( $template_path ) ) {
+				switch( strtolower( $class ) ) {
+					case 'rawphpengine':
+						$template_path = dirname( $this->get_file() ) . '/templates/podcast.multiple.php';
+						break;
+				}
+			}
+		}
+
+/*
+		if ( in_array( $template_name, array( 'podcast.single', 'podcast.multiple' ) ) ) {
+			if ( ! file_exists( $template_path ) ) {
+				switch ( strtolower($class) ) {
+					case 'rawphpengine':
+						if( $template_name == 'podcast.single' ) {
+							$template_path= dirname( $this->get_file() ) . '/templates/podcast.single.php';
+						}
+						else if( $template_name == 'podcast.multiple' ) {
+							$template_path = dirname( $this->get_file() ) . '/templates/podcast.multiple.php';
+						}
+						break;
+				}
+			}
+		}
+*/
+		return $template_path;
+	}
+
 	/**
 	* Add rewrite rules to map podcast feeds to this plugin
 	*
@@ -374,17 +384,29 @@ MEDIAJS;
 			'is_active' => 1,
 			'description' => 'Displays the podcast feed',
 		));
+
 		$rules[] = new RewriteRule(array(
 			'name' => 'display_podcast',
 			'parse_regex' => '%^(?P<slug>[^/]+)(?:/page/(?P<page>\d+))?/?$%i',
 			'build_str' => '{$slug}(/page/{$page})',
 			'handler' => 'UserThemeHandler',
 			'action' => 'display_podcast',
-//			'priority' => 7,
-			'priority' => 101,
+			'priority' => 7,
 			'is_active' => 1,
 			'description' => 'Displays a single podcast',
 		));
+
+		$rules[] = new RewriteRule(array(
+			'name' => 'display_podcasts',
+			'parse_regex' => '%podcast/(?P<name>' . $feed_regex . ')/(?:page/(?P<page>\d+))?/?$%i',
+			'build_str' => 'podcast/{$name}(/page/{$page})',
+			'handler' => 'UserThemeHandler',
+			'action' => 'display_podcasts',
+			'priority' => 7,
+			'is_active' => 1,
+			'description' => 'Displays multiple podcasts',
+		));
+
 		return $rules;
 	}
 
@@ -399,6 +421,29 @@ MEDIAJS;
 			}
 		}
 		return $where;
+	}
+
+	public function filter_theme_act_display_podcast( $handled, $theme )
+	{
+		$default_filters = array( 
+			'content_type' => Post::type( 'podcast' )
+		);
+		$paramarray['user_filters'] = $default_filters;
+
+		$theme->act_display_post( $paramarray );
+		return true;
+	}
+	
+	public function filter_theme_act_display_podcasts( $handled, $theme )
+	{
+		$default_filters = array(
+			'content_type' => Post::type( 'podcast' ),
+		);
+
+		$paramarray['user_filters'] = $default_filters;
+
+		$theme->act_display_entries( $paramarray );
+		return true;
 	}
 
 	/**
@@ -420,16 +465,6 @@ MEDIAJS;
 		}
 		
 		exit;
-	}
-
-	public function filter_theme_act_display_podcast( $handled, $theme )
-	{
-		$default_filters= array( 
-			'content_type' => Post::type( 'podcast' )
-		);
-
-		$theme->act_display_post( $default_filters );
-		return true;
 	}
 
 	/**
