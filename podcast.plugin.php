@@ -133,6 +133,9 @@ class Podcast extends Plugin
 	*/
 	function action_admin_header( $theme )
 	{
+		if( $theme->page == 'plugins' ) {
+			Stack::add('admin_stylesheet', array($this->get_url() . '/podcast.css', 'screen'));
+		}
 		if( $theme->page == 'publish' ) {
 			Stack::add('admin_stylesheet', array($this->get_url() . '/podcast.css', 'screen'));
 
@@ -179,7 +182,7 @@ MEDIAJS;
 			}
 			switch ($action){
 				case 'managefeeds' :
-					$ui = new FormUI('podcast');
+					$ui = new FormUI('manage-podcasts');
 
 					$addfeed = $ui->append('fieldset', 'addfeed', 'Add Feed');
 					$addfeed->append('text', 'feedname', 'null:null', _t( 'New Feed Name:', 'podcast' ) );
@@ -286,6 +289,7 @@ MEDIAJS;
 
 		return $content;
 	}
+
 
 	function embed_player( $file )
 	{
@@ -399,7 +403,6 @@ MEDIAJS;
 
 		$rules[] = new RewriteRule(array(
 			'name' => 'display_podcasts',
-//			'parse_regex' => '%podcast/(?P<name>' . $feed_regex . ')/(?:page/(?P<page>\d+))?/?$%i',
 			'parse_regex' => '%^podcast/(?P<name>' . $feed_regex . ')(?:/page/(?P<page>\d+))?/?$%i',
 			'build_str' => 'podcast/{$name}(/page/{$page})',
 			'handler' => 'UserThemeHandler',
@@ -622,7 +625,7 @@ ATOM;
 		$options = Options::get( "podcast__{$feed}_itunes" );
 
 		$ui = new FormUI( 'feed' );
-		$label = sprintf( _t( 'Edit %s iTunes options', 'podcast' ), $feed );
+		$label = sprintf( _t( 'Edit %s iTunes Channel Settings', 'podcast' ), $feed );
 		$itunes = $ui->append( 'fieldset', 'itunes', $label );
 
 		$author = $itunes->append( 'text', 'author', 'null:null', _t( 'Podcast Author: ', 'podcast' ) );
