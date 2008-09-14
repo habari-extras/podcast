@@ -86,11 +86,9 @@ class Podcast extends Plugin
 		'TV & Film',
 	);
 
-	private $itunes_explicit = array(
-		0 => 'Clean',
-		1 => 'No',
-		2 => 'Yes',
-	);
+	private $itunes_explicit = array( 'No', 'Clean', 'Yes' );
+	
+	private $itunes_rating = array( 'No Rating', 'Clean', 'Explicit' );
 
 	/**
 	*
@@ -277,8 +275,8 @@ MEDIAJS;
 			}
 		}
 	}
-
-	function filter_post_content_out( $content )
+/*
+	function filter_post_content_out( $content $post )
 	{
 		preg_match_all( '/<!-- file:(.*) -->/i', $content, $matches, PREG_PATTERN_ORDER );
 		$matches_obj = new ArrayObject( $matches[1] );
@@ -289,7 +287,18 @@ MEDIAJS;
 
 		return $content;
 	}
+*/
+	function filter_post_content_out( $content, $post )
+	{
+		preg_match_all( '/<!-- file:(.*) -->/i', $content, $matches, PREG_PATTERN_ORDER );
+		$matches_obj = new ArrayObject( $matches[1] );
 
+		for( $it = $matches_obj->getIterator(); $it->valid(); $it->next() ){
+			$content = str_ireplace( '<!-- file:' . $it->current() . ' -->', $this->embed_player( $it->current() ), $content );
+		}
+
+		return $content;
+	}
 
 	function embed_player( $file )
 	{
@@ -414,18 +423,37 @@ MEDIAJS;
 
 		return $rules;
 	}
-
-	public function filter_template_user_filters( $where )
+/*
+	public function filter_template_user_filters( $user_filters )
 	{
-		if( isset( $where['content_type'] ) ) {
-			if( is_array( $where['content_type'] ) ) {
-				$where['content_type'] = array_merge( $where['content_type'], array( Post::type( 'podcast' ) ) );
+		if( isset( $user_filters['content_type'] ) ) {
+			if( is_array( $user_filters['content_type'] ) ) {
+				$user_filters['content_type'] = array_merge( $user_filters['content_type'], array( Post::type( 'podcast' ) ) );
 			}
 			else {
-				$where['content_type'] = array( $where['content_type'], Post::type('podcast') );
+				$user_filters['content_type'] = array( $user_filters['content_type'], Post::type('podcast') );
 			}
 		}
-		return $where;
+		return $user_filters;
+	}
+*/
+	public function filter_template_where_filters( $filters )
+	{
+	Utils::debug( $filters );
+		Utils::debug( Controller::get_handler_vars());
+		extract( Controller::get_handler_vars() );
+		if( strlen( $entire_match) && strpos( $entire_match, 'podcast/' ) !== FALSE ) {
+			$filters['where'] = "{posts}.id in (select post_id from {postinfo} where name = '" . Controller::get_var( 'name' ) . "')";
+		}
+		if( isset( $filters['content_type'] ) ) {
+			if( is_array( $filters['content_type'] ) ) {
+				$filters['content_type'] = array_merge( $filters['content_type'], array( Post::type( 'podcast' ) ) );
+			}
+			else {
+				$filters['content_type'] = array( $filters['content_type'], Post::type( 'podcast' ) );
+			}
+		}
+		return $filters;
 	}
 
 	public function filter_theme_act_display_podcast( $handled, $theme )
@@ -486,12 +514,15 @@ MEDIAJS;
 	public function produce_rss( $feed_name )
 	{
 		$xml = $this->create_rss_wrapper( $feed_name );
-		$posts= Posts::get( array( 'status' => Post::status( 'published' ), 'content_type' => Post::type( 'podcast' ), array( 'info' => $feed_name ) ) );
+		$posts= Posts::get( array( 'status' => Post::status( 'published' ), 
+									'content_type' => Post::type( 'podcast' ), 
+//									'any:info' => array( $feed_name, '' ), 
+									'where' => "{posts}.id in (select post_id from {postinfo} where name = '$feed_name')",
+				) );
 		$xml = $this->add_posts( $xml, $posts, $feed_name );
 		Plugins::act( 'podcast_rss_collection', $xml, $posts, $feed_name );
 		ob_clean();
 		header( 'Content-Type: application/xml' );
-		file_put_contents( 'podcast.rss', $xml->asXML() );
 		echo $xml->asXML();
 		exit;
 	}
@@ -524,7 +555,7 @@ MEDIAJS;
 
 		$itunes_author = $channel->addChild( 'xmlns:itunes:author', $itunes['author'] );
 		$itunes_subtitle = $channel->addChild( 'xmlns:itunes:subtitle', $itunes['subtitle'] );
-		$itunes_summary = $channel->addChild( 'xmlns:itunes:summary', $itunes['subtitle'] );
+		$itunes_summary = $channel->addChild( 'xmlns:itunes:summary', $itunes['summary'] );
 		$itunes_owner = $channel->addChild( 'xmlns:itunes:owner' );
 		$itunes_owner_name = $itunes_owner->addChild( 'xmlns:itunes:name', $itunes['owner_name'] );
 		$itunes_owner_email = $itunes_owner->addChild( 'xmlns:itunes:email', $itunes['owner_email'] );
@@ -586,18 +617,20 @@ MEDIAJS;
 				$guid= $item->addChild( 'guid', $post->guid );
 				$guid->addAttribute( 'isPermaLink', 'false' );
 
-				list($url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block ) = $post->info->$feed_name;
-				$enclosure = $item->addChild( 'enclosure' );
-				$enclosure->addAttribute( 'url', $url );
-				$enclosure->addAttribute( 'length', $size );
-				$enclosure->addAttribute( 'type', 'audio/mpeg' );
+				extract( (array)$post->info->$feed_name );
+				$itunes_enclosure = $item->addChild( 'enclosure' );
+				$itunes_enclosure->addAttribute( 'url', $enclosure );
+				$itunes_enclosure->addAttribute( 'length', $size );
+				$itunes_enclosure->addAttribute( 'type', 'audio/mpeg' );
 
 				$itunes_author = $item->addChild( 'xmlns:itunes:author', $post->author->displayname );
 				$itunes_subtitle = $item->addChild( 'xmlns:itunes:subtitle', $subtitle );
 				$itunes_summary = $item->addChild( 'xmlns:itunes:summary', $summary );
 				$itunes_duration = $item->addChild( 'xmlns:itunes:duration', $duration );
-				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', $explicit );
-				$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', $keywords );
+				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', $rating );
+				if( count( $post->tags ) ) {
+					$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', implode( ', ', $post->tags ) );
+				}
 				$itunes_block = $item->addChild( 'xmlns:itunes:block', $block ? 'Yes' : 'No' );
 
 				Plugins::act( 'podcast_add_post', $item, $post );
@@ -644,15 +677,12 @@ ATOM;
 		$owner_email->value = $options['owner_email'] ? $options['owner_email'] : $user->email;
 		$owner_email->add_validator( 'validate_email' );
 
-		$explicit = $itunes->append( 'select', 'explicit', 'null:null', _t( 'Explicit Content: ', 'podcast' ) );
-		$explicit->options = $this->itunes_explicit;
+		$explicit = $itunes->append( 'select', 'explicit', 'null:null', _t( 'Content Rating: ', 'podcast' ) );
+		$explicit->options = $this->itunes_rating;
 		$explicit->value = isset( $options['explicit'] ) ? array_search( $options['explicit'], $this->itunes_explicit ) : 0;
 
 		$image = $itunes->append( 'text', 'image', 'null:null', _t( 'Podcast Artwork URL: ', 'podcast' ) );
 		$image->value = $options['image'] ? $options['image'] : '';
-
-		$block = $itunes->append( 'checkbox', 'block', 'null:null', _t( 'Block Podcast: ', 'podcast' ) );
-		$block->value = $options['block'] ? $options['block'] : 0;
 
 		$main_category = $itunes->append( 'select', 'main_category', 'null:null', _t( 'Podcast Category: ', 'podcast' ) );
 		$main_category->options = $this->itunes_categories;
@@ -665,6 +695,9 @@ ATOM;
 		$category_3 = $itunes->append( 'select', 'category_3', 'null:null', _t( 'Podcast Category: ', 'podcast' ) );
 		$category_3->options = $this->itunes_categories;
 		$category_3->value = isset( $options['category_3'] ) ? array_search( $options['category_3'], $this->itunes_categories ) : 0;
+
+		$block = $itunes->append( 'checkbox', 'block', 'null:null', _t( 'Block Podcast: ', 'podcast' ) );
+		$block->value = $options['block'] ? $options['block'] : 0;
 
 		$redirect = $itunes->append( 'text', 'redirect', 'null:null', _t( 'New podcast url: ' ) );
 
@@ -698,7 +731,7 @@ ATOM;
 	{
 		$postfields = $form->publish_controls->enclosures;
 		if( isset( $post->info->$feed ) ) {
-			list($url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block ) = $post->info->$feed;
+			$options = $post->info->$feed;
 		}
 		$control_id = md5($feed);
 		$fieldname = "{$control_id}_settings";
@@ -707,60 +740,46 @@ ATOM;
 
 		$fieldname = "enclosure_{$control_id}";
 		$customfield = $feed_fields->append('text', $fieldname, 'null:null', _t( 'Podcast Enclosure:', 'podcast' ), 'tabcontrol_text' );
-		$customfield->value = isset( $url ) ? $url : '';
+		$customfield->value = isset( $options['enclosure'] ) ? $options['enclosure'] : '';
 
 		$fieldname = "subtitle_{$control_id}";
 		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Subtitle:', 'podcast' ), 'tabcontrol_text' );
-		$customfield->value = isset( $subtitle ) ? $subtitle : '';
+		$customfield->value = isset( $options['subtitle'] ) ? $options['subtitle'] : '';
 
 		$fieldname = "explicit_{$control_id}";
-		$customfield = $feed_fields->append( 'select', $fieldname, 'null:null', _t( 'Explicit:', 'podcast' ) );
+		$customfield = $feed_fields->append( 'select', $fieldname, 'null:null', _t( 'Content Rating:', 'podcast' ) );
 		$customfield->template = 'tabcontrol_select';
-		$customfield->options = $this->itunes_explicit;
-		$customfield->value = isset( $explicit ) ? array_search( $explicit, $this->itunes_explicit )  : 0;
-
-		$fieldname = "keywords_{$control_id}";
-		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Keywords:', 'podcast' ), 'tabcontrol_text' );
-		$customfield->value = isset( $keywords ) ? $keywords : isset( $post->tags ) ?$post->tags : '' ;
+		$customfield->options = $this->itunes_rating;
+		$customfield->value = isset( $options['rating'] ) ? array_search( $options['rating'], $this->itunes_explicit ) : 0;
 
 		$fieldname = "summary_{$control_id}";
 		$customfield = $feed_fields->append( 'textarea', $fieldname, 'null:null', _t( 'Summary:', 'podcast' ), 'tabcontrol_textarea' );
-		$customfield->value = isset( $summary) ? $summary : strip_tags(Format::summarize( Format::autop( $post->content ) ) );
+		$customfield->value = isset( $options['summary'] ) ? $options['summary'] : strip_tags(Format::summarize( Format::autop( $post->content ) ) );
 
 		$fieldname = "block_{$control_id}";
 		$customfield = $feed_fields->append( 'checkbox', $fieldname, 'null:null', _t( 'Block:', 'podcast' ), 'tabcontrol_checkbox' );
-		$customfield->value = isset( $block ) ? $block : 0;
+		$customfield->value = isset( $options['block'] ) ? $options['block'] : 0;
 	}
 
 	protected function get_post_itunes_settings( $form, $post, $feed )
 	{
 		$control_id = md5($feed);
+		if( !strlen( $form->{"enclosure_{$control_id}"}->value ) ) {
+			return;
+		}
+		$options = array(
+			'enclosure' => $form->{"enclosure_{$control_id}"}->value,
+			'rating' => $this->itunes_explicit[$form->{"explicit_{$control_id}"}->value],
+			'subtitle' => $form->{"subtitle_{$control_id}"}->value,
+			'summary' => $form->{"summary_{$control_id}"}->value,
+			'block' => $form->{"block_{$control_id}"}->value,
+		);
 
-		$fieldname = "enclosure_{$control_id}";
-		$url = $form->$fieldname->value;
+		$mp3 = new MP3Info( $options['enclosure'], TRUE );
+		$options['size'] = $mp3->get_size();
+		$options['duration'] = $mp3->format_minutes_seconds( $mp3->get_duration() );
 
-		$fieldname = "explicit_{$control_id}";
-		$explicit = $this->itunes_explicit[$form->$fieldname->value];
-
-		$fieldname = "subtitle_{$control_id}";
-		$subtitle = $form->$fieldname->value;
-
-		$fieldname = "keywords_{$control_id}";
-		$keywords = $form->$fieldname->value;
-
-		$fieldname = "summary_{$control_id}";
-		$summary = $form->$fieldname->value;
-
-		$size = 0;
-		$duration = '';
-		$mp3 = new MP3Info( $url, TRUE );
-		$size = $mp3->get_size();
-		$duration = $mp3->format_minutes_seconds( $mp3->get_duration() );
-
-		$fieldname = "block_{$control_id}";
-		$block = $form->$fieldname->value;
-
-		$post->info->$feed = array( $url, $size, $duration, $explicit, $subtitle, $keywords, $summary, $block );
+		$post->info->$feed = $options;
 	}
 
 }
