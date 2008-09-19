@@ -342,7 +342,7 @@ MEDIAJS;
 			if ( ! file_exists( $template_path ) ) {
 				switch ( strtolower($class) ) {
 					case 'rawphpengine':
-						$template_path= dirname( $this->get_file() ) . '/templates/podcast.single.php';
+						$template_path = dirname( $this->get_file() ) . '/templates/podcast.single.php';
 						break;
 				}
 			}
@@ -514,7 +514,7 @@ MEDIAJS;
 	public function produce_rss( $feed_name )
 	{
 		$xml = $this->create_rss_wrapper( $feed_name );
-		$posts= Posts::get( array( 'status' => Post::status( 'published' ), 
+		$posts = Posts::get( array( 'status' => Post::status( 'published' ), 
 									'content_type' => Post::type( 'podcast' ), 
 //									'any:info' => array( $feed_name, '' ), 
 									'where' => "{posts}.id in (select post_id from {postinfo} where name = '$feed_name')",
@@ -545,11 +545,11 @@ MEDIAJS;
 		$atom_link->addAttribute( 'rel', 'self' );
 		$atom_link->addAttribute( 'type', 'application/rss+xml' );
 		$lang = $channel->addChild( 'language', strlen( Options::get( 'locale' ) ) ? Options::get( 'locale' ) : 'en-us' );
-		if ( $tagline= Options::get( 'tagline' ) ) {
-			$description= $channel->addChild( 'description', $tagline );
+		if ( $tagline = Options::get( 'tagline' ) ) {
+			$description = $channel->addChild( 'description', $tagline );
 		}
-		$pubDate= $channel->addChild( 'lastBuildDate', date( 'r', strtotime( Post::get()->pubdate ) ) );
-		$generator= $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
+		$pubDate = $channel->addChild( 'lastBuildDate', date( 'r', strtotime( Post::get()->pubdate ) ) );
+		$generator = $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
 
 		$itunes = Options::get( "podcast__{$feed_name}_itunes" );
 
@@ -609,12 +609,12 @@ MEDIAJS;
 		$items = $xml->channel;
 		foreach ( $posts as $post ) {
 			if ($post instanceof Post) {
-				$item= $items->addChild( 'item' );
-				$title= $item->addChild( 'title', $post->title );
-				$link= $item->addChild( 'link', $post->permalink );
-				$description= $item->addChild( 'description', $post->content );
-				$pubdate= $item->addChild ( 'pubDate', date( 'r', strtotime( $post->pubdate ) ) );
-				$guid= $item->addChild( 'guid', $post->guid );
+				$item = $items->addChild( 'item' );
+				$title = $item->addChild( 'title', $post->title );
+				$link = $item->addChild( 'link', $post->permalink );
+				$description = $item->addChild( 'description', $post->content );
+				$pubdate = $item->addChild ( 'pubDate', date( 'r', strtotime( $post->pubdate ) ) );
+				$guid = $item->addChild( 'guid', $post->guid );
 				$guid->addAttribute( 'isPermaLink', 'false' );
 
 				extract( (array)$post->info->$feed_name );

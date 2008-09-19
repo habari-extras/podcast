@@ -32,7 +32,7 @@ class MP3Info
 
 	function open( $file_name )
 	{
-		$file_handle= FALSE;
+		$file_handle = FALSE;
 		$file_handle = fopen( $file_name, 'rb'  );
 		if( $file_handle === FALSE ) {
 			return FALSE;
