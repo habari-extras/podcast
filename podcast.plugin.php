@@ -171,7 +171,7 @@ $.extend(habari.media.output.audio_mpeg3, {
 	add_to_{$feed}: function(fileindex, fileobj) {
 		$('#enclosure_{$feedmd5}').val(fileobj.url);
 //		habari.editor.insertSelection('<!-- file:' + fileobj.url+' -->'+'<a href="'+fileobj.url+'" rel="enclosure">'+fileobj.title+'</a>');
-		habari.editor.insertSelection('<a href="'+fileobj.url+'" rel="enclosure">'+fileob.title+'</a>');
+		habari.editor.insertSelection('<a href="'+fileobj.url+'" rel="enclosure">'+'fileobj.title'+'</a>');
 	}
 });
 MEDIAJS;
@@ -313,16 +313,14 @@ MEDIAJS;
 	function filter_post_content_out( $content, $post )
 	{
 		$this->current_post = $post;
-		preg_match_all( '%<a href="(.*) (rel="enclosure">)%', $content, $matches );
-
+		preg_match_all( '%<a href="(.*)(" rel="enclosure">)(.*)</a>%i', $content, $matches );
 		$count = count( $matches[1] );
-		$i = 0;
 		for( $i = 0; $i < $count; $i++ ){
-			print_r($matches[0][$i]);
 			$content = str_ireplace( $matches[0][$i], $this->embed_player( $matches[1][$i] ), $content );
 		}
 
 		$this->current_post = NULL;
+		$this->title = '';
 		return $content;
 	}
 
@@ -336,14 +334,13 @@ MEDIAJS;
 	*/
 	function embed_player( $file )
 	{
-		$options = array();
+	$options = array();
 		$feeds = Options::get( 'podcast__feeds' );
 		if( !isset( $feeds ) ) {
 			return;
 		}
-		$match = FALSE;
 		foreach( $feeds as $feed => $val ) {
-			if( isset( $this->current_post->info->$feed ) ) {
+			if( $this->current_post->info->$feed ) {
 				$options = $this->current_post->info->$feed;
 				if( $options['enclosure'] == $file ) {
 					break;
@@ -351,7 +348,7 @@ MEDIAJS;
 			}
 		}
 
-//		$this->title = strlen( $options['subtitle'] ) ? $options['subtitle'] : basename( $options['enclosure'], '.mp3' );
+		$title = isset( $options['subtitle'] ) ? $options['subtitle'] : basename( $options['enclosure'], '.mp3' );
 //		$player = '<p><object width="300" height="20">';
 //		$player .= '<param name="movie" value="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" />';
 //		$player .= '<param name="wmode" value="transparent" />';
@@ -364,6 +361,7 @@ MEDIAJS;
 		$player .= '<param name="bgcolor" value="#0000AA">';
 		$player .= '<embed src="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $file . '&as=0" quality="high" bgcolor="#0000AA" width="165" height="38" name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">';
 		$player .= '</embed></object></p>';
+		$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . $title . '</small></a></p>';
 
 		return $player;
 	}
@@ -644,7 +642,7 @@ MEDIAJS;
 		$items = $xml->channel;
 		foreach ( $posts as $post ) {
 			if ( $post instanceof Post ) {
-				$content = preg_replace( '%<!-- play podcast -->|\[display_podcast\]%', '', $post->content );
+				$content = preg_replace( '%\[display_podcast\]%', '', $post->content );
 				$item= $items->addChild( 'item' );
 				$title= $item->addChild( 'title', $post->title );
 				$link= $item->addChild( 'link', $post->permalink );
