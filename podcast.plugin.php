@@ -171,7 +171,7 @@ $.extend(habari.media.output.audio_mpeg3, {
 	add_to_{$feed}: function(fileindex, fileobj) {
 		$('#enclosure_{$feedmd5}').val(fileobj.url);
 //		habari.editor.insertSelection('<!-- file:' + fileobj.url+' -->'+'<a href="'+fileobj.url+'" rel="enclosure">'+fileobj.title+'</a>');
-		habari.editor.insertSelection('<a href="'+fileobj.url+'" rel="enclosure">'+'fileobj.title'+'</a>');
+		habari.editor.insertSelection('<a href="'+fileobj.url+'" rel="enclosure">'+fileobj.title+'</a>');
 	}
 });
 MEDIAJS;

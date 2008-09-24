@@ -7,7 +7,7 @@ class MP3Info
 	private $file_name;
 	private $size; // size of the file in bytes
 	private $validity;
-	private $content = '';
+//	private $content = '';
 
 	// MP3 frame information. Many of these are not yet used.
 	private $num_frames;
@@ -32,7 +32,7 @@ class MP3Info
 
 	function open( $file_name )
 	{
-		$file_handle = FALSE;
+		$file_handle= FALSE;
 		$file_handle = fopen( $file_name, 'rb'  );
 		if( $file_handle === FALSE ) {
 			return FALSE;
@@ -45,7 +45,13 @@ class MP3Info
 		$framesize = 0;
 		$hdr = NULL;
 
-		$this->content = stream_get_contents( $file_handle );
+		$rr = new RemoteRequest( $file_name );
+		$rr->execute();
+		if( ! $rr->executed() ) {
+			return FALSE;
+		}
+		$this->content = $rr->get_response_body();
+//		$this->content = stream_get_contents( $file_handle );
 		$this->size = strlen( $this->content );
 
 		$ch = $this->content[$pos];
@@ -119,7 +125,7 @@ class MP3Info
 			$this->duration = 0;
 		}
 		$this->file_name = $file_name;
-		fclose( $file_handle );
+//		fclose( $file_handle );
 
 		return TRUE;
 	}
