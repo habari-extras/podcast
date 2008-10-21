@@ -123,8 +123,15 @@ class Podcast extends Plugin
 	*/
 	function action_plugin_activation( $plugin_file )
 	{
-		if( Plugins::id_from_file(__FILE__) == Plugins::id_from_file($plugin_file) ) {
+		if( Plugins::id_from_file( __FILE__ ) == Plugins::id_from_file( $plugin_file ) ) {
 			Post::add_new_type( 'podcast' );
+		}
+	}
+
+	function action_plugin_deactivation( $plugin_file )
+	{
+		if( Plugins::id_from_file( __FILE__ ) == Plugins::id_from_file( $plugin_file  ) ) {
+			Post::deactivate_post_type( Post::type( 'podcast' ) );
 		}
 	}
 
@@ -135,10 +142,10 @@ class Podcast extends Plugin
 	function action_init()
 	{
 		$this->load_text_domain( 'podcast' );
-		$this->add_template( 'podcast.multiple', dirname(__FILE__) . '/templates/rawphp/podcast.multiple.php' );
-		$this->add_template( 'podcast.single', dirname(__FILE__) . '/templates/rawphp/podcast.single.php' );
-		$this->add_template( 'podcast.multiple', dirname(__FILE__) . '/templates/hi/podcast.multiple.php' );
-		$this->add_template( 'podcast.single', dirname(__FILE__) . '/templates/hi/podcast.single.php' );
+		$this->add_template( 'podcast.multiple', dirname( __FILE__ ) . '/templates/rawphp/podcast.multiple.php' );
+		$this->add_template( 'podcast.single', dirname( __FILE__ ) . '/templates/rawphp/podcast.single.php' );
+		$this->add_template( 'podcast.multiple', dirname( __FILE__ ) . '/templates/hi/podcast.multiple.php' );
+		$this->add_template( 'podcast.single', dirname( __FILE__ ) . '/templates/hi/podcast.single.php' );
 	}
 
 	/**
@@ -155,11 +162,12 @@ class Podcast extends Plugin
 	*/
 	function action_admin_header( $theme )
 	{
-		if( $theme->page == 'plugins' ) {
-			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ) );
+		$vars = Controller::get_handler_vars();
+		if( 'plugins' == $theme->page  && isset( $vars['configure'] ) && $this->plugin_id == $vars['configure']  ) {
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
 		}
-		if( $theme->page == 'publish' ) {
-			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ) );
+		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
 
 			$feeds = Options::get( 'podcast__feeds' );
 			if( isset( $feeds ) ) {
@@ -170,7 +178,6 @@ class Podcast extends Plugin
 $.extend(habari.media.output.audio_mpeg3, {
 	add_to_{$feed}: function(fileindex, fileobj) {
 		$('#enclosure_{$feedmd5}').val(fileobj.url);
-//		habari.editor.insertSelection('<!-- file:' + fileobj.url+' -->'+'<a href="'+fileobj.url+'" rel="enclosure">'+fileobj.title+'</a>');
 		habari.editor.insertSelection('<a href="'+fileobj.url+'" rel="enclosure">'+fileobj.title+'</a>');
 	}
 });
