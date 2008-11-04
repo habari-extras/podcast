@@ -118,6 +118,14 @@ class Podcast extends Plugin
 	}
 
 	/**
+	 * Add update beacon support
+	 **/
+	public function action_update_check()
+	{
+	 	Update::add( 'Podcast', 'DA241F86-AA81-11DD-B868-811556D89593', $this->info->version );
+	}
+
+	/**
 	* Set up the podcast content type on activation
 	* @param string $plugin_file The filename of the plugin being activated, compare to this class' filename
 	*/
@@ -554,6 +562,7 @@ MEDIAJS;
 		$params = array();
 		$params['status'] = Post::status( 'published' );
 		$params['content_type'] = Post::type( 'podcast' );
+		$params['limit'] = Options::get( 'atom_entries' );
 		$params['where'] = "{posts}.id IN (SELECT post_id FROM {postinfo} WHERE name = '{$feed_name}')";
 		$posts= Posts::get( $params );
 		$xml = $this->add_posts( $xml, $posts, $feed_name );
@@ -852,9 +861,16 @@ ATOM;
 			'block' => $form->{"block_{$control_id}"}->value,
 		);
 
-		$mp3 = new MP3Info( $options['enclosure'], TRUE );
-		$options['size'] = $mp3->get_size();
-		$options['duration'] = $mp3->format_minutes_seconds( $mp3->get_duration() );
+		$mp3 = new MP3Info( $options['enclosure'] );
+		$result = $mp3->open();
+		if( $result ) {
+			$options['size'] = $mp3->get_size();
+			$options['duration'] = $mp3->format_minutes_seconds( $mp3->get_duration() );
+		}
+		else {
+			$options['size'] = 0;
+			$options['duration'] = 0;
+		}
 
 		$post->info->$feed = $options;
 	}

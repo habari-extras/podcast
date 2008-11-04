@@ -5,12 +5,11 @@
 		<div class="postnext">{hi:@next_post_link}</div>
 		<div class="postprev">{hi:@prev_post_link}</div>
 	</div>
-<p>Using the hi template</p>
 	<div id="post-{hi:post.id}" class="{hi:post.statusname}">
 		<h1><a href="{hi:post.permalink}" rel="bookmark" title="{hi:post.title}">{hi:post.title_out}</a></h1>
 		<div class="pubMeta"><?php _e( 'Posted by' ); ?> {hi:post.author.displayname} <?php _e( 'on' ); ?> {hi:post.pubdate_out}</div>
 		<?php if ( $user instanceOf User ) { ?>
-			<div class="edit"><a href="<?php URL::out( 'admin', 'page=publish&slug=' . $post->slug); ?>" title="<?php _e( 'Edit post' ); ?>"><?php _e( 'Edit post' ); ?></a></div>
+			<div class="edit"><a href="{hi:post.editlink}" title="<?php _e( 'Edit post' ); ?>"><?php _e( 'Edit post' ); ?></a></div>
 		<?php } ?>
 		<div class="entry">
 			{hi:post.content_out}
@@ -22,16 +21,16 @@
 
 	<div class="entryMeta">	
 		<p>
-			<?php if ( count( $post->tags ) ) { ?>
-				<?php _e( 'This entry is filed under' ); ?> <?php echo $post->tags_out; ?>. 
-			<?php } ?>
+			{hi:?count(post.tags)}
+				<?php _e( 'This entry is filed under' ); ?> {hi:post.tags_out}. 
+			{/hi:?}
 			<?php _e( 'You can follow any responses to this entry through the' ); ?>
 			<a href="{hi:post.comment_feed_link}"> feed</a>
-			<?php if ( !$post->info->comments_disabled ) { ?>
+			{hi:?post.info.comments_disabled = 0}
 				<?php _e( 'or leave you own' ); ?> <a href="#comments_form">comment</a>.
-			<?php } elseif ( $post->info->comments_disabled ) { ?>
+			{hi:?else?}
 				. <?php _e( 'New comments are currently closed.' ); ?>
-			<?php } ?>
+			{/hi:?}
 		</p>
 	</div><!-- end entryMeta -->
 
