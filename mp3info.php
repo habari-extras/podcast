@@ -122,7 +122,9 @@ class MP3Info
 			$this->duration = 0;
 		}
 
-		unlink( $tmp );
+		if( ! $this->is_local_file( $this->file_name ) ) {
+			unlink( $tmp );
+		}
 		return TRUE;
 	}
 
