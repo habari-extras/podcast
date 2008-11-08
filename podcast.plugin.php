@@ -363,7 +363,7 @@ MEDIAJS;
 			}
 		}
 
-		$title = isset( $options['subtitle'] ) ? $options['subtitle'] : basename( $options['enclosure'], '.mp3' );
+		$title = ! empty( $options['subtitle'] ) ? $options['subtitle'] : basename( $options['enclosure'], '.mp3' );
 //		$player = '<p><object width="300" height="20">';
 //		$player .= '<param name="movie" value="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" />';
 //		$player .= '<param name="wmode" value="transparent" />';
@@ -717,18 +717,18 @@ ATOM;
 		$label = sprintf( _t( 'Edit %s iTunes Channel Settings', 'podcast' ), $feed );
 		$itunes = $ui->append( 'fieldset', 'itunes', $label );
 
-		$author = $itunes->append( 'text', 'author', 'null:null', _t( 'Podcast Author: ', 'podcast' ) );
+		$author = $itunes->append( 'text', 'author', 'null:null', _t( 'Podcast Author * : ', 'podcast' ) );
 		$author->value = $options['author'] ? $options['author'] : $user->displayname;
 		$author->add_validator( 'validate_required' );
 
 		$subtitle = $itunes->append( 'text', 'subtitle', 'null:null', _t( 'Podcast Subtitle: ', 'podcast' ) );
 		$subtitle->value = $options['subtitle'] ? $options['subtitle'] : Options::get( 'tagline' );
 
-		$summary = $itunes->append( 'textarea', 'summary', 'null:null', _t( 'Podcast Summary: ', 'podcast' ) );
+		$summary = $itunes->append( 'textarea', 'summary', 'null:null', _t( 'Podcast Summary * : ', 'podcast' ) );
 		$summary->value = $options['summary'] ? $options['summary'] : Options::get( 'tagline' );
 		$summary->add_validator( 'validate_required' );
 
-		$owner_name = $itunes->append( 'text', 'owner_name', 'null:null', _t( 'Podcast Owner Name: ', 'podcast' ) );
+		$owner_name = $itunes->append( 'text', 'owner_name', 'null:null', _t( 'Podcast Owner Name * : ', 'podcast' ) );
 		$owner_name->value = $options['owner_name'] ? $options['owner_name'] : $user->displayname;
 		$owner_name->add_validator( 'validate_required' );
 
@@ -744,7 +744,7 @@ ATOM;
 		$image->value = $options['image'] ? $options['image'] : '';
 //		$image->add_validator( 'validate_required' );
 
-		$main_category = $itunes->append( 'select', 'main_category', 'null:null', _t( 'Podcast Category: ', 'podcast' ) );
+		$main_category = $itunes->append( 'select', 'main_category', 'null:null', _t( 'Podcast Category * : ', 'podcast' ) );
 		$main_category->options = $this->itunes_categories;
 		$main_category->value = isset( $options['main_category'] ) ? array_search( $options['main_category'], $this->itunes_categories ) : 0;
 		$main_category->add_validator( 'validate_required' );
@@ -816,7 +816,7 @@ ATOM;
 		$feed_fields->class = 'podcast-settings';
 
 		$fieldname = "enclosure_{$control_id}";
-		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Podcast Enclosure:', 'podcast' ), 'tabcontrol_text' );
+		$customfield = $feed_fields->append( 'text', $fieldname, 'null:null', _t( 'Podcast Enclosure * :', 'podcast' ), 'tabcontrol_text' );
 		$customfield->value = isset( $options['enclosure'] ) ? $options['enclosure'] : '';
 		$customfield->add_validator( 'validate_required' );
 
