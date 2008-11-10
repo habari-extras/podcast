@@ -14,13 +14,13 @@
  */
 
 require_once( 'mp3info.php' );
+require_once( 'podcasthandler.php' );
 
 class Podcast extends Plugin
 {
 
 	const PODCAST_ITUNES = 0;
 
-	private $current_url = '';
 	private $current_post = NULL;
 
 	private $itunes_rating = array(
@@ -139,7 +139,7 @@ class Podcast extends Plugin
 	function action_plugin_deactivation( $plugin_file )
 	{
 		if( Plugins::id_from_file( __FILE__ ) == Plugins::id_from_file( $plugin_file  ) ) {
-			Post::deactivate_post_type( Post::type( 'podcast' ) );
+			Post::deactivate_post_type( 'podcast' );
 		}
 	}
 
@@ -157,7 +157,7 @@ class Podcast extends Plugin
 	}
 
 	/**
-	* This function is incomplete. Still trying to decide
+	* This function is unfinished. Still trying to decide
 	* how to add the media player to the post when it
 	* is shown on site.
 	*
@@ -325,22 +325,27 @@ MEDIAJS;
 	* @return string The altered content
 	*/
 
-	function filter_post_content_out( $content, $post )
+	function filter_post_content( $content, $post )
 	{
-		$this->current_post = $post;
-		preg_match_all( '%<a href="(.*)(" rel="enclosure">)(.*)</a>%i', $content, $matches );
-		$count = count( $matches[1] );
-		for( $i = 0; $i < $count; $i++ ){
-			$content = str_ireplace( $matches[0][$i], $this->embed_player( $matches[1][$i] ), $content );
-		}
+		$rule = URL::get_matched_rule();
 
-		$this->current_post = NULL;
-		$this->title = '';
+		if( 'UserThemeHandler' == $rule->handler ) {
+			$this->current_post = $post;
+			preg_match_all( '%<a href="(.*)(" rel="enclosure">)(.*)</a>%i', $content, $matches );
+
+			$count = count( $matches[1] );
+			for( $i = 0; $i < $count; $i++ ){
+				$content = str_ireplace( $matches[0][$i], $this->embed_player( $matches[1][$i] ), $content );
+			}
+
+			$this->current_post = NULL;
+			$this->title = '';
+		}
 		return $content;
 	}
 
 	/**
-	* Callback function used by filter_post_content_out
+	* Callback function used by filter_post_content
 	* to embed a media player in the post content
 	*
 	* @param str $file The file to create a media player for
@@ -376,7 +381,7 @@ MEDIAJS;
 		$player .= '<param name="bgcolor" value="#0000AA">';
 		$player .= '<embed src="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $file . '&as=0" quality="high" bgcolor="#0000AA" width="165" height="38" name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">';
 		$player .= '</embed></object></p>';
-		$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . $title . '</small></a></p>';
+		$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . htmlspecialchars( $title, ENT_COMPAT, 'UTF-8' ) . '</small></a></p>';
 
 		return $player;
 	}
@@ -461,7 +466,7 @@ MEDIAJS;
 			'name' => 'podcast',
 			'parse_regex' => '%podcast/(?P<name>' . $feed_regex . ')/(?P<feed_type>rss|atom)/?$%i',
 			'build_str' => 'podcast/{$name}/{$feed_type}',
-			'handler' => 'UserThemeHandler',
+			'handler' => 'PodcastHandler',
 			'action' => 'podcast',
 			'priority' => 7,
 			'is_active' => 1,
@@ -477,6 +482,15 @@ MEDIAJS;
 			'is_active' => 1,
 			'description' => 'Displays multiple podcasts',
 		));
+		$rules[] = new RewriteRule( array(
+			'name' => 'atom_feed_podcast_comments',
+			'parse_regex' => '%^(?P<slug>[^/]+)/atom/comments(?:/page/(?P<page>\d+))?/?$%i', 
+			'build_str' => '{$slug}/atom/comments(/page/{$page})', 
+			'handler' => 'AtomHandler', 
+			'action' => 'entry_comments', 
+			'priority' => 8, 
+			'description' => 'Podcast comments',
+		));
 
 		return $rules;
 	}
@@ -490,9 +504,9 @@ MEDIAJS;
 	*/
 	public function filter_template_where_filters( $filters )
 	{
-		extract( Controller::get_handler_vars() );
-		if( strlen( $entire_match) && strpos( $entire_match, 'podcast/' ) !== FALSE && isset( $podcast_name ) ) {
-			$filters['where'] = "{posts}.id in ( select post_id from {postinfo} where name = '$podcast_name' )";
+		$vars = Controller::get_handler_vars();
+		if( strlen( $vars['entire_match'] ) && strpos( $vars['entire_match'], 'podcast/' ) !== FALSE && isset( $vars['podcast_name'] ) ) {
+			$filters['where'] = "{posts}.id in ( select post_id from {postinfo} where name = '{$vars['podcast_name']}' )";
 		}
 		if( isset( $filters['content_type'] ) ) {
 			if( is_array( $filters['content_type'] ) ) {
@@ -528,177 +542,6 @@ MEDIAJS;
 
 		$theme->act_display( $paramarray );
 		return TRUE;
-	}
-
-	/**
-	* Respond to requests for podcast feeds
-	*
-	* @param array $handler_vars The variables gathered from the rewrite rules.
-	*/
-	public function action_handler_podcast( $handler_vars ) {
-		extract($handler_vars); // Expecting: $entire_match $name $feed_type
-		$this->current_url = Site::get_url( 'habari' ) . '/' . $entire_match;
-
-		switch( $feed_type ) {
-			case 'rss':
-				$this->produce_rss( $name );
-				break;
-			case 'atom':
-				$this->produce_atom( $name );
-				break;
-		}
-
-		exit;
-	}
-
-	/**
-	* Produce RSS output for the named feed.
-	*
-	* @param string $feed_name The name of the feed to output
-	*/
-	public function produce_rss( $feed_name )
-	{
-		$xml = $this->create_rss_wrapper( $feed_name );
-		$params = array();
-		$params['status'] = Post::status( 'published' );
-		$params['content_type'] = Post::type( 'podcast' );
-		$params['limit'] = Options::get( 'atom_entries' );
-		$params['where'] = "{posts}.id IN (SELECT post_id FROM {postinfo} WHERE name = '{$feed_name}')";
-		$posts= Posts::get( $params );
-		$xml = $this->add_posts( $xml, $posts, $feed_name );
-		Plugins::act( 'podcast_rss_collection', $xml, $posts, $feed_name );
-		ob_clean();
-		header( 'Content-Type: application/xml' );
-		echo $xml->asXML();
-		exit;
-	}
-
-	/**
-	 * Creates a basic RSS-format XML structure with channel and items elements
-	 * @return SimpleXMLElement The requested RSS document
-	 */
-	public function create_rss_wrapper( $feed_name )
-	{
-		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
-		$xml->addAttribute( 'xmlns:xmlns:atom', 'http://www.w3.org/2005/Atom' );
-		$xml->addAttribute( 'xmlns:xmlns:itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd' );
-		$xml->addAttribute(  'version', '2.0' );
-		$channel = $xml->addChild( 'channel' );
-		$title = $channel->addChild( 'title', Options::get( 'title' ) );
-		$link = $channel->addChild( 'link', Site::get_url( 'habari' ) );
-		$atom_link = $channel->addChild( 'xmlns:atom:link' );
-		$atom_link->addAttribute( 'href', $this->current_url );
-		$atom_link->addAttribute( 'rel', 'self' );
-		$atom_link->addAttribute( 'type', 'application/rss+xml' );
-		$lang = $channel->addChild( 'language', strlen( Options::get( 'locale' ) ) ? Options::get( 'locale' ) : 'en-us' );
-		if ( $tagline= Options::get( 'tagline' ) ) {
-			$description= $channel->addChild( 'description', $tagline );
-		}
-		$max_time = DB::get_value( "SELECT MAX(pubdate) FROM {posts} WHERE status = ? AND content_type = ? AND id in ( SELECT post_id from {postinfo} where name = ? )", array( Post::status( 'published' ), Post::type( 'podcast' ), $feed_name ) );
-		$pubDate= $channel->addChild( 'lastBuildDate', HabariDateTime::date_create( $max_time )->get( 'r' ) );
-		$generator= $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
-
-		$itunes = Options::get( "podcast__{$feed_name}_itunes" );
-
-		$itunes_author = $channel->addChild( 'xmlns:itunes:author', $itunes['author'] );
-		$itunes_subtitle = $channel->addChild( 'xmlns:itunes:subtitle', $itunes['subtitle'] );
-		$itunes_summary = $channel->addChild( 'xmlns:itunes:summary', $itunes['summary'] );
-		$itunes_owner = $channel->addChild( 'xmlns:itunes:owner' );
-		$itunes_owner_name = $itunes_owner->addChild( 'xmlns:itunes:name', $itunes['owner_name'] );
-		$itunes_owner_email = $itunes_owner->addChild( 'xmlns:itunes:email', $itunes['owner_email'] );
-		$itunes_explicit = $channel->addChild( 'xmlns:itunes:explicit', array_search( $itunes['explicit'], $this->itunes_rating ) );
-		$itunes_image = $channel->addChild( 'xmlns:itunes:image' );
-		$itunes_image->addAttribute( 'href', $itunes['image'] );
-		if( strlen( $itunes['main_category'] ) ) {
-			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
-			$categories = explode( ':', $itunes['main_category'] );
-			$itunes_category->addAttribute( 'text', $categories[0] );
-			if( isset( $categories[1] ) ) {
-				$child = $itunes_category->addChild( 'xmlns:itunes:category' );
-				$child->addAttribute( 'text', $categories[1] );
-			}
-		}
-		if( isset( $itunes['category_2'] ) ) {
-			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
-			$categories = explode( ':', $itunes['category_2'] );
-			$itunes_category->addAttribute( 'text', $categories[0] );
-			if( isset( $categories[1] ) ) {
-				$child = $itunes_category->addChild( 'xmlns:itunes:category' );
-				$child->addAttribute( 'text', $categories[1] );
-			}
-		}
-		if( strlen( $itunes['category_3'] ) ) {
-			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
-			$categories = explode( ':', $itunes['category_3'] );
-			$itunes_category->addAttribute( 'text', $categories[0] );
-			if( isset( $categories[1] ) ) {
-				$child = $itunes_category->addChild( 'xmlns:itunes:category' );
-				$child->addAttribute( 'text', $categories[1] );
-			}
-		}
-		$itunes_block = $channel->addChild( 'xmlns:itunes:block', $itunes['block'] ? 'Yes' : 'No' );
-		if ( strlen( $itunes['redirect'] ) ) {
-			$itunes_redirect = $channel->addChild( 'xmlns:itunes:new-feed-url', $itunes['redirect'] );
-		}
-
-		Plugins::act( 'podcast_create_wrapper', $xml );
-		return $xml;
-	}
-
-	/**
-	 * Add posts as items in the provided xml structure
-	 * @param SimpleXMLElement $xml The document to add to
-	 * @param array $posts An array of Posts to add to the XML
-	 * @return SimpleXMLElement The resultant XML with added posts
-	 *
-	 * @TODO replace post podcast markers with a url
-	 */
-	public function add_posts( $xml, $posts, $feed_name )
-	{
-		$items = $xml->channel;
-		foreach ( $posts as $post ) {
-			if ( $post instanceof Post ) {
-				$content = preg_replace( '%\[display_podcast\]%', '', $post->content );
-				$item= $items->addChild( 'item' );
-				$title= $item->addChild( 'title', $post->title );
-				$link= $item->addChild( 'link', $post->permalink );
-				$description= $item->addChild( 'description', Format::autop( $content ) );
-				$pubdate= $item->addChild ( 'pubDate', $post->pubdate->format( 'r' ) );
-				$guid= $item->addChild( 'guid', $post->guid );
-				$guid->addAttribute( 'isPermaLink', 'false' );
-
-				extract( (array)$post->info->$feed_name );
-				$itunes_enclosure = $item->addChild( 'enclosure' );
-				$itunes_enclosure->addAttribute( 'url', $enclosure );
-				$itunes_enclosure->addAttribute( 'length', $size );
-				$itunes_enclosure->addAttribute( 'type', 'audio/mpeg' );
-
-				$itunes_author = $item->addChild( 'xmlns:itunes:author', $post->author->displayname );
-				$itunes_subtitle = $item->addChild( 'xmlns:itunes:subtitle', $subtitle );
-				$itunes_summary = $item->addChild( 'xmlns:itunes:summary', $summary );
-				$itunes_duration = $item->addChild( 'xmlns:itunes:duration', $duration );
-				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', array_search( $rating, $this->itunes_rating ) );
-				if( count( $post->tags ) ) {
-					$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', implode( ', ', $post->tags ) );
-				}
-				$itunes_block = $item->addChild( 'xmlns:itunes:block', $block ? 'Yes' : 'No' );
-
-				Plugins::act( 'podcast_add_post', $item, $post );
-			}
-		}
-		return $xml;
-	}
-
-	/**
-	* Produce Atom output for the named feed.
-	*
-	* @param string $feed_name The name of the feed to output
-	*/
-	public function produce_atom( $feed_name )
-	{
-		echo <<< ATOM
-Atom goes here.
-ATOM;
 	}
 
 	/**
@@ -738,7 +581,7 @@ ATOM;
 
 		$explicit = $itunes->append( 'select', 'explicit', 'null:null', _t( 'Content Rating: ', 'podcast' ) );
 		$explicit->options = $this->itunes_rating;
-		$explicit->value = isset( $options['explicit'] ) ? $options['explicit'] : $this->itunes_rating['No'];
+		$explicit->value = isset( $options['explicit'] ) ? $this->itunes_rating[$options['explicit']] : $this->itunes_rating['No'];
 
 		$image = $itunes->append( 'text', 'image', 'null:null', _t( 'Podcast Artwork URL: ', 'podcast' ) );
 		$image->value = $options['image'] ? $options['image'] : '';
@@ -782,7 +625,7 @@ ATOM;
 		'summary' => $ui->summary->value,
 		'owner_name' => $ui->owner_name->value,
 		'owner_email' => $ui->owner_email->value,
-		'explicit' => $this->itunes_rating[$ui->explicit->value],
+		'explicit' => $ui->explicit->value,
 		'image' => $ui->image->value,
 		'block' => $ui->block->value,
 		'main_category' => $this->itunes_categories[$ui->main_category->value],
@@ -828,7 +671,7 @@ ATOM;
 		$customfield = $feed_fields->append( 'select', $fieldname, 'null:null', _t( 'Content Rating:', 'podcast' ) );
 		$customfield->template = 'tabcontrol_select';
 		$customfield->options = $this->itunes_rating;
-		$customfield->value = isset( $options['rating'] ) ? $options['rating'] : $this->itunes_rating['No'];
+		$customfield->value = isset( $options['rating'] ) ? $this->itunes_rating[$options['rating']] : $this->itunes_rating['No'];
 
 		$fieldname = "summary_{$control_id}";
 		$customfield = $feed_fields->append( 'textarea', $fieldname, 'null:null', _t( 'Summary:', 'podcast' ), 'tabcontrol_textarea' );
@@ -855,7 +698,7 @@ ATOM;
 		}
 		$options = array(
 			'enclosure' => $form->{"enclosure_{$control_id}"}->value,
-			'rating' => $this->itunes_rating[$form->{"explicit_{$control_id}"}->value],
+			'rating' => $form->{"explicit_{$control_id}"}->value,
 			'subtitle' => $form->{"subtitle_{$control_id}"}->value,
 			'summary' => $form->{"summary_{$control_id}"}->value,
 			'block' => $form->{"block_{$control_id}"}->value,
