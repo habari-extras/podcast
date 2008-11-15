@@ -1,11 +1,11 @@
 Plugin: Podcast
 URL: http://habariproject.org
-Version: 1.0.3
+Version: 1.1.0
 Author: Habari Project
 
 Podcast is a Habari plugin that is intended to make creating and updating podcast feeds as simple as possible. It allows you to create and edit feeds, including the iTunes settings for the feed, and create and edit podcast posts.
 
-Podcast is fully integrated with the Habari media silo, allowing you to point and click to add an mp3 file to a podcast post. It also has a built-in media player that is inserted in podcast posts at the location where you have inserted the link to the mp3 file.
+Podcast is fully integrated with the Habari media silo, allowing you to point and click to add an mp3 file to a podcast post. It also has two built-in media players, The niftyplayer and the slim version of the xspf player.  The configured player is inserted in podcast posts at the location where you have inserted the link to the mp3 file.
 
 Requirements 
 
@@ -16,6 +16,8 @@ Installation
 1. Copy the plugin directory into your user/plugins directory or the site's plugins directory.
 2. Go to the plugins page of your Habari admin panel.
 3. Click on the Activate button for Podcast.
+
+If you are upgrading your Podcast plugin, it is recommended that you deactivate, then reactivate the plugin to set new default values. All your current feed settings will be preserved.
 
 Usage
 
@@ -93,9 +95,14 @@ Podcast Templates
 
 Podcast comes with four templates one each for an individual podcast post and for multiple podcast post pages, for both the rawphpengine and the hiengine. These will probably not fit with the theme of your blog, so it is recommended that you copy them to your theme directory and modify them as needed.
 
-The Player
+The Players
 
-Podcast uses the niftyplayer to enable playing podcast audio files on your site. When a podcast post is viewed, the plugin searches it's content and replaces all links with the rel="enclosure" attribute with a player and a link to download the file. Thus, if you have multiple audio file links in the post, a separate player will be embedded for each of them.
+Podcast provides two flash players, the nifty player and the slim version of the xspf player. It uses the chosen player to enable playing podcast audio files on your site. When a podcast post is viewed, the plugin searches it's content and replaces all links with the rel="enclosure" attribute with a player and a link to download the file. Thus, if you have multiple audio file links in the post, a separate player will be embedded for each of them.
+
+To configure the players
+	1. Select 'Configure Players' from Podcast's droplist on the plugin page of the admin area.
+	2. Choose which player you wish to use. The default is the niftyplayer.
+	3. Set the options for the selected player. For both players you can set the height and width. The default values are reasonable for most sites. For the niftyplayer you can set the background color to more closely match your site using hex RGB colors. A hex RGB color consists of 6 digits. The left two denote the degree of red, the middle two the degree of green, and the right two the degree of blue. Each digit is a hexadecimal numeral from 0 - F. The default results in a white background.
 
 Uninstallation
 
@@ -113,6 +120,10 @@ Simply deactivating Podcast makes no changes to your database other than taking 
 4. The content_type for all podcast posts is the same as the podcast id number from the posttype table. You can delete these posts completely or change their content_type to one that remains in your posttype table, most likely the 'entry' type.
 
 Changelog
+Version 1.1.0
+Changed: Added configuration option to choose which flash player to use.
+Changed: Added configuration options for the flash players.
+
 Version 1.0.3
 Fixed: Properly deactivate podcast type when the plugin is deactivated.
 Fixed: Podcast comment feed link wasn't being generated properly.

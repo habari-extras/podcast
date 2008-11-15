@@ -82,7 +82,7 @@ class PodcastHandler extends ActionHandler
 		$pubDate= $channel->addChild( 'lastBuildDate', HabariDateTime::date_create( $max_time )->get( 'r' ) );
 		$generator= $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
 
-		$itunes = Options::get( "podcast__{$feed_name}_itunes" );
+		$itunes = Options::get( Podcast::OPTIONS_PREFIX . "{$feed_name}_itunes" );
 
 		$itunes_author = $channel->addChild( 'xmlns:itunes:author', $itunes['author'] );
 		$itunes_subtitle = $channel->addChild( 'xmlns:itunes:subtitle', $itunes['subtitle'] );

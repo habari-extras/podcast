@@ -20,8 +20,23 @@ class Podcast extends Plugin
 {
 
 	const PODCAST_ITUNES = 0;
+	const OPTIONS_PREFIX = 'podcast__';
+
+	private $default_options = array(
+		'player' => 'niftyplayer',
+		'nifty_background' => 'FFFFFF',
+		'nifty_width' => '165',
+		'nifty_height' => '38',
+		'xspf_width' => '300',
+		'xspf_height' => '20',
+		);
 
 	private $current_post = NULL;
+	
+	private $players = array(
+		'niftyplayer' => 'Niftyplayer',
+		'xspf' => 'xspf',
+	);
 
 	private $itunes_rating = array(
 		'No' => 'No Rating',
@@ -104,14 +119,14 @@ class Podcast extends Plugin
 	* Return information about this plugin
 	* @return array Plugin info array
 	*/
-	function info()
+	public function info()
 	{
 		return array (
 			'name' => 'Podcast',
 			'url' => 'http://habariproject.org/',
 			'author' => 'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
-			'version' => '1.0.1',
+			'version' => '1.1.0',
 			'description' => 'This plugin provides podcasting functionality and iTunes compatibility.',
 			'license' => 'Apache License 2.0',
 		);
@@ -129,14 +144,20 @@ class Podcast extends Plugin
 	* Set up the podcast content type on activation
 	* @param string $plugin_file The filename of the plugin being activated, compare to this class' filename
 	*/
-	function action_plugin_activation( $plugin_file )
+	public function action_plugin_activation( $plugin_file )
 	{
 		if( Plugins::id_from_file( __FILE__ ) == Plugins::id_from_file( $plugin_file ) ) {
 			Post::add_new_type( 'podcast' );
 		}
+		foreach ( $this->default_options as $name => $value ) {
+			$current_value = Options::get( self::OPTIONS_PREFIX . $name );
+			if ( !isset( $current_value) ) {
+				Options::set( self::OPTIONS_PREFIX . $name, $value );
+			}
+		}
 	}
 
-	function action_plugin_deactivation( $plugin_file )
+	public function action_plugin_deactivation( $plugin_file )
 	{
 		if( Plugins::id_from_file( __FILE__ ) == Plugins::id_from_file( $plugin_file  ) ) {
 			Post::deactivate_post_type( 'podcast' );
@@ -147,7 +168,7 @@ class Podcast extends Plugin
 	* Actions to be carried out when the site is accessed
 	* and the plugin is active.
 	*/
-	function action_init()
+	public function action_init()
 	{
 		$this->load_text_domain( 'podcast' );
 		$this->add_template( 'podcast.multiple', dirname( __FILE__ ) . '/templates/rawphp/podcast.multiple.php' );
@@ -168,7 +189,7 @@ class Podcast extends Plugin
 	*
 	* @param Theme $theme the current theme being used.
 	*/
-	function action_admin_header( $theme )
+	public function action_admin_header( $theme )
 	{
 		$vars = Controller::get_handler_vars();
 		if( 'plugins' == $theme->page  && isset( $vars['configure'] ) && $this->plugin_id == $vars['configure']  ) {
@@ -177,7 +198,7 @@ class Podcast extends Plugin
 		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
 			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
 
-			$feeds = Options::get( 'podcast__feeds' );
+			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			if( isset( $feeds ) ) {
 				$output = '';
 				foreach( $feeds as $feed => $feedtype ) {
@@ -227,7 +248,7 @@ MEDIAJS;
 					$addfeed->append( 'select', 'feedtype', 'null:null', _t( 'New Feed Type:', 'podcast' ) );
 					$addfeed->feedtype->options = array( 'itunes' );
 
-					$feeds = Options::get( 'podcast__feeds' );
+					$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 					$feeddata = array();
 					if( isset( $feeds ) ) {
 						$feeddata = array_keys(  $feeds );
@@ -240,9 +261,24 @@ MEDIAJS;
 						$feeds->value = $feeddata; 
 					}
 
-					$ui->append( 'submit', 'submit', 'Submit' );
+					$ui->append( 'submit', 'submit', _t( 'Submit' ) );
 
 					$ui->on_success( array( $this, 'manage_feeds' ) );
+					$ui->out();
+					break;
+				case 'configure_player':
+					$ui = new FormUI( 'configure-players' );
+					$players = $ui->append( 'fieldset', 'players', _t( 'Choose Player ' ) );
+					$player = $players->append( 'select', 'player', self::OPTIONS_PREFIX . 'player' );
+					$player->options = $this->players;
+					$nifty = $ui->append( 'fieldset', 'nifty', _t( 'Nifty Player Settings' ) );
+					$nifty_bkgrd = $nifty->append( 'text', 'nifty_bkgrd', self::OPTIONS_PREFIX . 'nifty_background', _t( 'Background color (hex value, e.g. ffffff)' ) );
+					$nifty_width = $nifty->append( 'text', 'nifty_width', self::OPTIONS_PREFIX . 'nifty_width', _t( 'Player Width (pixels)' ) );
+					$nifty_height = $nifty->append( 'text', 'nifty_height', self::OPTIONS_PREFIX . 'nifty_height', _t( 'Player Height (pixels)' ) );
+					$xspf = $ui->append( 'fieldset', 'xspf', _t( 'Xspf Player Settings' ) );
+					$xspf_width = $xspf->append( 'text', 'xspf_width', self::OPTIONS_PREFIX . 'xspf_width', _t( 'Player Width (pixels)' ) );
+					$xspf_height = $xspf->append( 'text', 'xspf_height', self::OPTIONS_PREFIX . 'xspf_height', _t( 'Player Height (pixels)' ) );
+					$ui->append( 'submit', 'submit', _t( 'Submit' ) );
 					$ui->out();
 					break;
 			}
@@ -260,7 +296,8 @@ MEDIAJS;
 	{
 		if ( $plugin_id == $this->plugin_id() ) {
 			$actions['managefeeds'] = _t( 'Manage Feeds' );
-			$feeds = Options::get( 'podcast__feeds' );
+			$actions['configure_player'] = _t( 'Configure Players' );
+			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			if( isset( $feeds ) ) {
 				foreach( $feeds as $feedname => $feedtype ) {
 					$actions['feed_' . md5($feedname)] = sprintf( _t( 'Edit "%s" feed', 'podcast' ), $feedname );
@@ -277,7 +314,7 @@ MEDIAJS;
 	 */
 	public function manage_feeds( $form )
 	{
-		$feeds = Options::get( 'podcast__feeds' );
+		$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 		$feedsout = array();
 		if( count( $feeds ) > 0 ) {
 			foreach( $feeds as $feedname => $feedtype ) {
@@ -289,7 +326,7 @@ MEDIAJS;
 		if( $form->feedname->value != '' ) {
 			$feedsout[$form->feedname->value] = $form->feedtype->value;
 		}
-		Options::set( 'podcast__feeds', $feedsout );
+		Options::set( self::OPTIONS_PREFIX . 'feeds', $feedsout );
 
 		Utils::redirect();
 	}
@@ -304,7 +341,7 @@ MEDIAJS;
 	public function action_form_publish( $form, $post )
 	{
 		if( $form->content_type->value == Post::type( 'podcast' ) ) {
-			$feeds = Options::get( 'podcast__feeds' );
+			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			$postfields = $form->publish_controls->append( 'fieldset', 'enclosures', _t( 'Enclosures', 'podcast'  ) );
 			foreach( $feeds as $feed => $feedtype ) {
 				switch( $feedtype ) {
@@ -325,7 +362,7 @@ MEDIAJS;
 	* @return string The altered content
 	*/
 
-	function filter_post_content( $content, $post )
+	public function filter_post_content( $content, $post )
 	{
 		$rule = URL::get_matched_rule();
 
@@ -352,9 +389,9 @@ MEDIAJS;
 	*
 	* @return string The code for the media player
 	*/
-	function embed_player( $file )
+	protected function embed_player( $file )
 	{
-	$options = array();
+		$options = array();
 		$feeds = Options::get( 'podcast__feeds' );
 		if( !isset( $feeds ) ) {
 			return;
@@ -369,19 +406,29 @@ MEDIAJS;
 		}
 
 		$title = ! empty( $options['subtitle'] ) ? $options['subtitle'] : basename( $options['enclosure'], '.mp3' );
-//		$player = '<p><object width="300" height="20">';
-//		$player .= '<param name="movie" value="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" />';
-//		$player .= '<param name="wmode" value="transparent" />';
-//		$player .= '<embed src="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlspecialchars( Options::get( 'title' ), ENT_COMPAT, 'UTF-8' ) . '" type="application/x-shockwave-flash" wmode="transparent" width="300" height="20"></embed>';
-//		$player .= '</object></p>';
 
-		$player = '<p><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="165" height="38" id="niftyPlayer1" align="">';
-		$player .= '<param name=movie value="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $file . '&as=0">';
-		$player .= '<param name="quality" value="high">';
-		$player .= '<param name="bgcolor" value="#0000AA">';
-		$player .= '<embed src="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $file . '&as=0" quality="high" bgcolor="#0000AA" width="165" height="38" name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">';
-		$player .= '</embed></object></p>';
-		$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . htmlspecialchars( $title, ENT_COMPAT, 'UTF-8' ) . '</small></a></p>';
+		switch( Options::get( self::OPTIONS_PREFIX . 'player' ) ) {
+			case 'xspf':
+				$player = '<p><object width="300" height="20">';
+				$player .= '<param name="movie" value="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlentities( Options::get( 'title' ), ENT_QUOTES, 'UTF-8' ) . '" />';
+				$player .= '<param name="wmode" value="transparent" />';
+				$player .= '<embed src="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlentities( Options::get( 'title' ), ENT_QUOTES, 'UTF-8' ) . '" type="application/x-shockwave-flash" wmode="transparent" width="300" height="20"></embed>';
+				$player .= '</object></p>';
+//				$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . htmlentities( $title, ENT_QUOTES, 'UTF-8' ) . '</small></a></p>';
+				$player .= '<p><a href="' . $options['enclosure'] . '" ><small>Download Podcast</small></a></p>';
+				break;
+
+			case 'niftyplayer':
+				$player = '<p><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="165" height="38" id="niftyPlayer1" align="">';
+				$player .= '<param name=movie value="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $file . '&as=0">';
+				$player .= '<param name="quality" value="high">';
+				$player .= '<param name="bgcolor" value="#' . Options::get( self::OPTIONS_PREFIX . 'nifty_background' ) . '">';
+				$player .= '<embed src="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $file . '&as=0" quality="high" bgcolor="#' . Options::get( self::OPTIONS_PREFIX . 'nifty_background' ) . '" width="' . Options::get( self::OPTIONS_PREFIX . 'nifty_width' ) . '" height="' . Options::get( self::OPTIONS_PREFIX . 'nifty_height' ) . '" name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer">';
+				$player .= '</embed></object></p>';
+//				$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . htmlentities( $title, ENT_QUOTES, 'UTF-8' ) . '</small></a></p>';
+				$player .= '<p><a href="' . $options['enclosure'] . '" ><small>Download Podcast</small></a></p>';
+				break;
+		}
 
 		return $player;
 	}
@@ -397,7 +444,7 @@ MEDIAJS;
 	public function action_publish_post( $post, $form )
 	{
 		if( $post->content_type == Post::type( 'podcast' ) ) {
-			$feeds = Options::get( 'podcast__feeds' );
+			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			foreach( $feeds as $feed => $feedtype ) {
 				switch( $feedtype ) {
 					case self::PODCAST_ITUNES:
@@ -456,7 +503,7 @@ MEDIAJS;
 	*/
 	public function filter_rewrite_rules( $rules )
 	{
-		$feeds = Options::get( 'podcast__feeds' );
+		$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 		if( !isset( $feeds ) ) {
 			return $rules;
 		}
@@ -554,7 +601,7 @@ MEDIAJS;
 	{
 		$feed = $it->key();
 		$user = User::identify();
-		$options = Options::get( "podcast__{$feed}_itunes" );
+		$options = Options::get( self::OPTIONS_PREFIX . "{$feed}_itunes" );
 
 		$ui = new FormUI( 'feed' );
 		$label = sprintf( _t( 'Edit %s iTunes Channel Settings', 'podcast' ), $feed );
@@ -634,7 +681,7 @@ MEDIAJS;
 		'redirect' => $ui->redirect->value,
 		);
 
-		Options::set( "podcast__{$it->key()}_itunes", $options );
+		Options::set( self::OPTIONS_PREFIX . "{$it->key()}_itunes", $options );
 		Session::notice( "{$it->key()} iTunes options updated." );
 	}
 
