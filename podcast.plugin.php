@@ -409,10 +409,10 @@ MEDIAJS;
 
 		switch( Options::get( self::OPTIONS_PREFIX . 'player' ) ) {
 			case 'xspf':
-				$player = '<p><object width="300" height="20">';
+				$player = '<p><object width="' . Options::get( self::OPTIONS_PREFIX . 'xspf_width' ) . '" height="' . Options::get( self::OPTIONS_PREFIX . 'xspf_height' ) . '">';
 				$player .= '<param name="movie" value="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlentities( Options::get( 'title' ), ENT_QUOTES, 'UTF-8' ) . '" />';
 				$player .= '<param name="wmode" value="transparent" />';
-				$player .= '<embed src="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlentities( Options::get( 'title' ), ENT_QUOTES, 'UTF-8' ) . '" type="application/x-shockwave-flash" wmode="transparent" width="300" height="20"></embed>';
+				$player .= '<embed src="' . $this->get_url() . '/players/xspf/xspf_player_slim.swf?song_url=' . $file . '&song_title=' . $title . '&player_title=' . htmlentities( Options::get( 'title' ), ENT_QUOTES, 'UTF-8' ) . '" type="application/x-shockwave-flash" wmode="transparent" width="' . Options::get( self::OPTIONS_PREFIX . 'xspf_width' ) . '" height="' . Options::get( self::OPTIONS_PREFIX . 'xspf_height' ) . '"></embed>';
 				$player .= '</object></p>';
 //				$player .= '<p><a href="' . $options['enclosure'] . '" rel="enclosure"><small>' . htmlentities( $title, ENT_QUOTES, 'UTF-8' ) . '</small></a></p>';
 				$player .= '<p><a href="' . $options['enclosure'] . '" ><small>Download Podcast</small></a></p>';
