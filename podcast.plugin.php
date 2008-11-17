@@ -218,6 +218,34 @@ MEDIAJS;
 	}
 
 	/**
+	 * Add output in the admin header after the stacks have been added
+	 * 
+	 */
+	public function action_admin_header_after( $theme )
+	{
+		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
+
+			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
+			if( isset( $feeds ) ) {
+				$output = '';
+				foreach( $feeds as $feed => $feedtype ) {
+					$feedmd5 = md5( $feed );
+					$output .= <<< MEDIAJS
+$.extend(habari.media.output.audio_mpeg3, {
+	add_to_{$feed}: function(fileindex, fileobj) {
+		$('#enclosure_{$feedmd5}').val(fileobj.url);
+		habari.editor.insertSelection('<a href="'+fileobj.url+'" rel="enclosure">'+fileobj.title+'</a>');
+	}
+});
+MEDIAJS;
+				}
+				echo "<script type=\"text/javascript\">{$output}</script>";
+			}
+		}
+	}
+
+	/**
 	* Respond to the user selecting an action on the plugin page
 	*
 	* @param string $plugin_id The string id of the acted-upon plugin

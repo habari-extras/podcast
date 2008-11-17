@@ -1,6 +1,6 @@
 Plugin: Podcast
 URL: http://habariproject.org
-Version: 1.1.0
+Version: 1.1.1
 Author: Habari Project
 
 Podcast is a Habari plugin that is intended to make creating and updating podcast feeds as simple as possible. It allows you to create and edit feeds, including the iTunes settings for the feed, and create and edit podcast posts.
@@ -120,6 +120,9 @@ Simply deactivating Podcast makes no changes to your database other than taking 
 4. The content_type for all podcast posts is the same as the podcast id number from the posttype table. You can delete these posts completely or change their content_type to one that remains in your posttype table, most likely the 'entry' type.
 
 Changelog
+Version 1.1.1
+Fixed: Add links to the droplists in the Habari media silo again after changes in how Habari processes stacks.
+
 Version 1.1.0
 Changed: Added configuration option to choose which flash player to use.
 Changed: Added configuration options for the flash players.
