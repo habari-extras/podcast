@@ -164,6 +164,17 @@ class Podcast extends Plugin
 		}
 	}
 
+	public function filter_post_type_display($type, $foruse) 
+	{ 
+		$names = array( 
+			'podcast' => array(
+				'singular' => _t( 'Podcast', 'podcast' ),
+				'plural' => _t( 'Podcasts', 'podcast' ),
+			)
+		); 
+ 		return isset($names[$type][$foruse]) ? $names[$type][$foruse] : $type; 
+	}
+
 	/**
 	* Actions to be carried out when the site is accessed
 	* and the plugin is active.
