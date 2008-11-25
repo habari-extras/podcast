@@ -126,7 +126,7 @@ class Podcast extends Plugin
 			'url' => 'http://habariproject.org/',
 			'author' => 'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
-			'version' => '1.1.0',
+			'version' => '1.1.1',
 			'description' => 'This plugin provides podcasting functionality and iTunes compatibility.',
 			'license' => 'Apache License 2.0',
 		);
@@ -193,20 +193,11 @@ class Podcast extends Plugin
 	{
 		$vars = Controller::get_handler_vars();
 		if( 'plugins' == $theme->page  && isset( $vars['configure'] ) && $this->plugin_id == $vars['configure']  ) {
-			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'jquery' ) );
 		}
 		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
 			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
-		}
-	}
 
-	/**
-	 * Add output in the admin header after the stacks have been added
-	 * 
-	 */
-	public function action_admin_header_after( $theme )
-	{
-		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
 			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			if( isset( $feeds ) ) {
 				$output = '';
@@ -221,7 +212,7 @@ $.extend(habari.media.output.audio_mpeg3, {
 });
 MEDIAJS;
 				}
-				echo "<script type=\"text/javascript\">{$output}</script>";
+				Stack::add( 'admin_header_javascript', $output, 'podcast', 'jquery' );
 			}
 		}
 	}
@@ -352,12 +343,25 @@ MEDIAJS;
 		if( $form->content_type->value == Post::type( 'podcast' ) ) {
 			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			$postfields = $form->publish_controls->append( 'fieldset', 'enclosures', _t( 'Enclosures', 'podcast'  ) );
+			if( count( $feeds ) ) {
 			foreach( $feeds as $feed => $feedtype ) {
 				switch( $feedtype ) {
 				case self::PODCAST_ITUNES:
 					$this->post_itunes_form( $form, $post, $feed );
 					break;
 				}
+			}
+			}
+			else {
+				$msg = _t( 'You must create a feed first.', 'podcast' );
+				$msg .= '<ol><li>';
+				$msg .= _t( "Go to the plugins page and select 'Manage Feeds' from the Podcast plugins droplist.", 'podcast' );
+				$msg .= '</li><li>';
+				$msg .= _t( 'Create a feed.', 'podcast' );
+				$msg .= '</li>.</ol>';
+				$msg .= _t( 'After doing so you can begin to create podcast posts.', 'podcast' );
+				$wrapper = $postfields->append( 'wrapper', 'nofeeds' );
+				$wrapper->append( 'static', 'no_feeds', $msg );
 			}
 		}
 	}

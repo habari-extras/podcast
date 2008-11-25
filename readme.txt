@@ -82,6 +82,8 @@ If you have more than one feed, you can use a post in as many of them as you lik
 
 If the post is being added to more than one feed, continue on to make desired changes for each feed. After you are completely done, click the 'Save' button to save the post as a draft or to save any changes to an already published post, or click the 'Publish' button to publish the post. When you do so, the Podcast plugin will add any tags for the post to its iTunes keywords, calculate the length of the audio file for each feed, and calculate the running time for each audio file. These calculations can cause Podcast posts to take a little longer to save than regular entries, especially if the audio files are hosted on an external server.
 
+Note: If you haven't set up a feed, there will be no links in the Habari media silo to insert a podcast into a post. Nor will there be any controls under the Enclosures tab to set information regarding the podcast's enclosures. There will only appear text directing you to create a feed.
+
 Accessing Podcasts From Your Site
 
 The Podcast plugin makes several changes to your blog
@@ -120,6 +122,9 @@ Simply deactivating Podcast makes no changes to your database other than taking 
 4. The content_type for all podcast posts is the same as the podcast id number from the posttype table. You can delete these posts completely or change their content_type to one that remains in your posttype table, most likely the 'entry' type.
 
 Changelog
+Version 1.1.2
+Changed: Added a civilized way to choose the background color for the Niftyplayer.
+
 Version 1.1.1
 Fixed: Add links to the droplists in the Habari media silo again after changes in how Habari processes stacks.
 
