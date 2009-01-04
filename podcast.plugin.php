@@ -126,7 +126,7 @@ class Podcast extends Plugin
 			'url' => 'http://habariproject.org/',
 			'author' => 'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
-			'version' => '1.1.1',
+			'version' => '1.1.2',
 			'description' => 'This plugin provides podcasting functionality and iTunes compatibility.',
 			'license' => 'Apache License 2.0',
 		);
@@ -579,15 +579,62 @@ MEDIAJS;
 		if( strlen( $vars['entire_match'] ) && strpos( $vars['entire_match'], 'podcast/' ) !== FALSE && isset( $vars['podcast_name'] ) ) {
 			$filters['where'] = "{posts}.id in ( select post_id from {postinfo} where name = '{$vars['podcast_name']}' )";
 		}
+
 		if( isset( $filters['content_type'] ) ) {
-			if( is_array( $filters['content_type'] ) ) {
-				$filters['content_type'] = array_merge( $filters['content_type'], array( Post::type( 'podcast' ) ) );
-			}
-			else {
-				$filters['content_type'] = array( $filters['content_type'], Post::type( 'podcast' ) );
-			}
+			$types = Utils::single_array( $filters->offsetGet( 'content_type' ) );
+			$types[] = Post::type( 'podcast' );
+			$filters->offsetSet( 'content_type', $types );
 		}
 		return $filters;
+	}
+
+	/**
+	* Filter the parameters passed to Posts::get()  in the Atomhandler.
+	* @param $content_type. mixed. content types being passed.
+	* @return array. content types with Podcast type added.
+	*/
+	public function filter_atom_get_collection_content_type( $content_type )
+	{
+		$content_type = Utils::single_array( $content_type );
+		$content_type[] = Post::type( 'podcast' );
+		return $content_type;
+	}
+
+	/**
+	* If there is an enclosure on the post, add it to the feed
+	* @param $feed_entry. String. The entry as it will appear in the feed.
+	* @param $post. Post. The post that is providing the content for the feed entry.
+	*/
+	public function action_atom_add_post( $feed_entry, $post )
+	{
+		$info = $post->info->get_url_args();
+		foreach( $info as $key => $value ) {
+			if( is_array( $value ) && isset( $value['enclosure'] ) ) {
+				$enclosure = $feed_entry->addChild( 'link' );
+				$enclosure->addAttribute( 'rel', 'enclosure' );
+				$enclosure->addAttribute( 'href', $value['enclosure'] );
+				$enclosure->addAttribute( 'length', $value['size'] );
+				$enclosure->addAttribute( 'type', 'audio/mpeg' );
+			}
+		}
+	}
+
+	/**
+	* If there is an enclosure on the post, add it to the feed
+	* @param $feed_entry. String. The entry as it will appear in the feed.
+	* @param $post. Post. The post that is providing the content for the feed entry.
+	*/
+	public function action_rss_add_post( $feed_entry, $post )
+	{
+		$info = $post->info->get_url_args();
+		foreach( $info as $key => $value ) {
+			if( is_array( $value ) && isset( $value['enclosure'] ) ) {
+				$enclosure = $feed_entry->addChild( 'enclosure' );
+				$enclosure->addAttribute( 'url', $value['enclosure'] );
+				$enclosure->addAttribute( 'length', $value['size'] );
+				$enclosure->addAttribute( 'type', 'audio/mpeg' );
+			}
+		}
 	}
 
 	/**
@@ -787,6 +834,7 @@ MEDIAJS;
 		}
 
 		$post->info->$feed = $options;
+
 	}
 
 }

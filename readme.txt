@@ -1,6 +1,6 @@
 Plugin: Podcast
 URL: http://habariproject.org
-Version: 1.1.1
+Version: 1.1.2
 Author: Habari Project
 
 Podcast is a Habari plugin that is intended to make creating and updating podcast feeds as simple as possible. It allows you to create and edit feeds, including the iTunes settings for the feed, and create and edit podcast posts.
@@ -123,7 +123,7 @@ Simply deactivating Podcast makes no changes to your database other than taking 
 
 Changelog
 Version 1.1.2
-Changed: Added a civilized way to choose the background color for the Niftyplayer.
+Fixed: Podcast posts are included in the main atom feed. They are also included in the rss feed if the rss plugin is active. Enclosures are properly generated, but if a post contains data for more than one enclosure, an enclosure will be generated for each one. iTunes data is not generated for the site's main feed.
 
 Version 1.1.1
 Fixed: Add links to the droplists in the Habari media silo again after changes in how Habari processes stacks.

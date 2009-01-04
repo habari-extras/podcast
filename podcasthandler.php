@@ -144,6 +144,14 @@ class PodcastHandler extends ActionHandler
 			if ( $post instanceof Post ) {
 				// remove Podpress detritus
 				$content = preg_replace( '%\[display_podcast\]%', '', $post->content );
+				// experimental elimination of podcast links from feed
+				preg_match_all( '%<a href="(.*)(" rel="enclosure">)(.*)</a>%i', $content, $matches );
+
+				$count = count( $matches[1] );
+				for( $i = 0; $i < $count; $i++ ){
+					$content = str_ireplace( $matches[0][$i], '', $content );
+				}
+
 				$item = $items->addChild( 'item' );
 				$title = $item->addChild( 'title', $post->title );
 				$link = $item->addChild( 'link', $post->permalink );
