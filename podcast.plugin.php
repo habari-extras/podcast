@@ -223,7 +223,7 @@ $.extend(habari.media.output.audio_mpeg3, {
 });
 MEDIAJS;
 				}
-				Stack::add( 'admin_header_javascript', $output, 'podcast', 'jquery' );
+				Stack::add( 'admin_header_javascript', $output, 'podcast', array( 'jquery', 'media' ) );
 			}
 		}
 	}
@@ -601,7 +601,7 @@ MEDIAJS;
 	}
 
 	/**
-	* If there is an enclosure on the post, add it to the feed
+	* If their is an enclosure on the post, add it to the feed
 	* @param $feed_entry. String. The entry as it will appear in the feed.
 	* @param $post. Post. The post that is providing the content for the feed entry.
 	*/
@@ -620,7 +620,7 @@ MEDIAJS;
 	}
 
 	/**
-	* If there is an enclosure on the post, add it to the feed
+	* If their is an enclosure on the post, add it to the feed
 	* @param $feed_entry. String. The entry as it will appear in the feed.
 	* @param $post. Post. The post that is providing the content for the feed entry.
 	*/
