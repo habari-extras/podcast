@@ -306,14 +306,14 @@ MEDIAJS;
 	public function filter_plugin_config( $actions, $plugin_id )
 	{
 		if ( $plugin_id == $this->plugin_id() ) {
-			$actions['managefeeds'] = _t( 'Manage Feeds' );
-			$actions['configure_player'] = _t( 'Configure Players' );
 			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			if( isset( $feeds ) ) {
 				foreach( $feeds as $feedname => $feedtype ) {
-					$actions['feed_' . md5($feedname)] = sprintf( _t( 'Edit "%s" feed', 'podcast' ), $feedname );
+					$actions['feed_' . md5($feedname)] = sprintf( _t( 'Configure %s', 'podcast' ), $feedname );
 				}
 			}
+			$actions['configure_player'] = _t( 'Configure Player' );
+			$actions['managefeeds'] = _t( 'Manage Feeds' );
 		}
 		return $actions;
 	}
