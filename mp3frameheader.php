@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class MP3FrameHeader
 {

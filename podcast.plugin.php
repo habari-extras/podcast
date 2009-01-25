@@ -207,7 +207,7 @@ class Podcast extends Plugin
 			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'admin' ) );
 		}
 		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
-			//Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'admin' )  );
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'admin' )  );
 
 			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			if( isset( $feeds ) ) {
