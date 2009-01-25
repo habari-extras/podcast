@@ -131,38 +131,6 @@ class Podcast extends Plugin
 			'license' => 'Apache License 2.0',
 		);
 	}
-	
-	/**
-	 * Display help text
-	 * @return string The help text
-	 */
-	public function help()
-	{
-		return '<p>Podcast is a Habari plugin that is intended to make creating and updating podcast feeds as simple as possible. It allows you to create and edit feeds, including the iTunes settings for the feed, and create and edit podcast posts.</p>
-<p>Podcast is fully integrated with the Habari media silo, allowing you to point and click to add an mp3 file to a podcast post. It also has two built-in media players, The niftyplayer and the slim version of the xspf player. The configured player is inserted in podcast posts at the location where you have inserted the link to the mp3 file.</p>
-<h3>Usage</h3>
-<h4>General</h4>
-<p>When Podcast is activated, it creates a new content type called, naturally enough, podcast. You will see a new menu item under the admin menu&apos;s <em>New</em> submenu to create podcast posts, and a new menu item under the <em>Manage</em> submenu to manage podcast posts.</p>
-<p>Podcast has three main screens for configuration. Two of these, <em>Manage Feeds</em> and <em>Edit Feed</em> are located on the plugins page of the admin area and are used to manage and edit your podcast feeds. The third is located on the post publish page and is reached by clicking the <em>Enclosures</em> tab under the tags area when you are creating or editing a podcast post.</p>
-<h4>Manage Feeds</h4>
-<p>Podcast is able to create and maintain as many feeds as you wish, a capability you may know as category casting. To create or delete a podcast feed use this configuration form.</p>
-<ul>
-	<li>Navigate to the Plugins page of the admin area.</li>
-	<li>Select <code>Manage Feeds</code> from the Podcast dropdown menu. The feed management form will open up. To create a new feed:
-		<ul>
-			<li>type in the feed&apos;s name in the top edit box</li>
-			<li>select the feed type from the next select box</li>
-			<li>click the <code>Save</code> button. Currently iTunes is the only feed type available.</li>
-		</ul>
-	</li>
-	<li>To delete a feed you no longer want
-		<ol>
-			<li>uncheck the feed you want to delete at the bottom of the form.</li>
-			<li>click the <code>Save</code> button.</li>
-		</ol>
-	</li>
-</ul>';
-	}
 
 	/**
 	 * Add update beacon support
@@ -236,10 +204,10 @@ class Podcast extends Plugin
 	{
 		$vars = Controller::get_handler_vars();
 		if( 'plugins' == $theme->page  && isset( $vars['configure'] ) && $this->plugin_id == $vars['configure']  ) {
-			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'jquery' ) );
+			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'admin' ) );
 		}
 		if( 'publish' == $theme->page && $theme->form->content_type->value == Post::type( 'podcast' ) ) {
-			Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast' );
+			//Stack::add( 'admin_stylesheet', array( $this->get_url() . '/podcast.css', 'screen' ), 'podcast', array( 'admin' )  );
 
 			$feeds = Options::get( self::OPTIONS_PREFIX . 'feeds' );
 			if( isset( $feeds ) ) {
@@ -869,6 +837,10 @@ MEDIAJS;
 
 	}
 
+	public function help()
+	{
+		return file_get_contents( $this->get_url() . '/help.html' );
+	}
 }
 
 ?>
