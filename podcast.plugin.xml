@@ -1,0 +1,10 @@
+<plugin>
+	<name>Podcast</name>
+	<url>http://habariproject.org/</url>
+	<author>Habari Community</author>
+	<authorurl>http://habariproject.org/</authorurl>
+	<version>1.1.2</version>
+	<description>This plugin provides podcasting functionality and iTunes compatibility.</description>
+	<license>Apache License 2.0</license>
+</plugin>
+
