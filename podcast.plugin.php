@@ -127,7 +127,7 @@ class Podcast extends Plugin
 			'author' => 'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
 			'version' => '1.1.2',
-			'description' => 'This plugin provides podcasting functionality and iTunes compatibility.',
+			'description' => 'Podcast provides podcasting functionality and iTunes compatibility.',
 			'license' => 'Apache License 2.0',
 		);
 	}
