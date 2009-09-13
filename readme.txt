@@ -1,6 +1,6 @@
 Plugin: Podcast
 URL: http://habariproject.org
-Version: 1.1.2
+Version: 1.2
 Author: Habari Project
 
 Podcast is a Habari plugin that is intended to make creating and updating podcast feeds as simple as possible. It allows you to create and edit feeds, including the iTunes settings for the feed, and create and edit podcast posts.
@@ -72,7 +72,11 @@ Note: There are two important points here. First, the link must have the rel="en
 
 If you have more than one feed, you can use a post in as many of them as you like. You can either add the same audio file for each feed, or add more than one audio file to the post in the position you desire, with whichever feeds you want. Having more than one audio file in a post won't interfere with the individual feeds. Each will contain only the appropriate audio file. However, in the post as viewed on your blog, a player will appear for each feed and each file. Please note that the last link entered for each feed from the Habari silo in this manner will be the only one to be added to the actual podcast feed.
 
-2. Click the 'Enclosures' tab underneath the tags area. A form will open containing the options for each indivdual feed that you have created for your site, one set of feed options after the other. For iTunes feeds these include
+2. Click the 'Enclosures' tab underneath the tags area. A form will open containing the options for the player display settings and for each indivdual feed that you have created for your site, one set of feed options after the other. For the display settings these include
+	a. Show player instead of link - Checked by default. Uncheck to not show a player for the podcast in your post. Instead, a link to download the podcast will be shown.
+	b. Show download link under player - Uncheck to not show a download link for the podcast if a player is shown for it.
+
+For iTunes feeds the options include
 
 	a. Podcast Enclosure - this is the name of the audio file you are using for the feed. If you placed the file in the post with the Habari silo, this will have been automatically filled in for you. If not, enter it manually, being sure to enter a fully qualified url. This is the only required item.
 	b. Subtitle - if you want the post to have a subtitle, enter it here
@@ -115,13 +119,16 @@ Uninstallation
 Cleanup
 
 Simply deactivating Podcast makes no changes to your database other than taking it out of the list of active plugins. If you reactivate it, all your setting will remain in place. However, if you feel draconian and decide to stop podcasting completely and wish to remove all podcast related items from your database, refer to the following. However, unless you are experienced with database manipulation, you can create problems with your database if you perform any of the following actions. Backups are your friend. 
-
 1. The plugin places an 'podcast__feeds' item and an item whose name is preceded by 'podcast__' for each feed you have created in your Options table. This can be safely deleted after you uninstall the plugin. 
 2. The plugin stores items in the postinfo table for each post which belongs to a feed. These are named after the feed to which they belong. For example, if you have a feed named 'itunes', they will be named 'itunes. These entries can be safely deleted if you uninstall the plugin.
 3. A 'podcast' entry is made in your posttype table. After noting it's id number, you can safely delete it.
 4. The content_type for all podcast posts is the same as the podcast id number from the posttype table. You can delete these posts completely or change their content_type to one that remains in your posttype table, most likely the 'entry' type.
 
 Changelog
+Version 1.2
+Fixed: Several of the translatable strings have been updated
+Changed: Made showing the player and showing the download link in posts options. You can show just a download link, just a player, or both.
+
 Version 1.1.2
 Fixed: Podcast posts are included in the main atom feed. They are also included in the rss feed if the rss plugin is active. Enclosures are properly generated, but if a post contains data for more than one enclosure, an enclosure will be generated for each one. iTunes data is not generated for the site's main feed.
 

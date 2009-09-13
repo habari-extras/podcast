@@ -44,10 +44,15 @@ class PodcastHandler extends ActionHandler
 	{
 		$xml = $this->create_rss_wrapper( $feed_name );
 		$params = array();
+		// This doesn't work, because the $params['where'] overrides it
 		$params['status'] = Post::status( 'published' );
 		$params['content_type'] = Post::type( 'podcast' );
 		$params['limit'] = Options::get( 'atom_entries' );
+		$params['has:info'] = $feed_name;
+		/*
 		$params['where'] = "{posts}.id IN (SELECT post_id FROM {postinfo} WHERE name = '{$feed_name}')";
+		*/
+
 		$posts= Posts::get( $params );
 		$xml = $this->add_posts( $xml, $posts, $feed_name );
 		Plugins::act( 'podcast_rss_collection', $xml, $posts, $feed_name );
@@ -63,12 +68,14 @@ class PodcastHandler extends ActionHandler
 	 */
 	public function create_rss_wrapper( $feed_name )
 	{
-		$xml = new SimpleXMLElement( '<?xml version="1.0" encoding="UTF-8" ?><rss></rss>' );
+		$itunes = Options::get( Podcast::OPTIONS_PREFIX . "{$feed_name}_itunes" );
+
+		$xml = new SimpleXMLElement( '<'.'?xml version="1.0" encoding="UTF-8" ?'.'><rss></rss>' );
 		$xml->addAttribute( 'xmlns:xmlns:atom', 'http://www.w3.org/2005/Atom' );
 		$xml->addAttribute( 'xmlns:xmlns:itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd' );
 		$xml->addAttribute(  'version', '2.0' );
 		$channel = $xml->addChild( 'channel' );
-		$title = $channel->addChild( 'title', Options::get( 'title' ) );
+		$title = $channel->addChild( 'title', isset($itunes['title']) ? $itunes['title'] : Options::get( 'title' ) );
 		$link = $channel->addChild( 'link', Site::get_url( 'habari' ) );
 		$atom_link = $channel->addChild( 'xmlns:atom:link' );
 		$atom_link->addAttribute( 'href', $this->current_url );
@@ -82,18 +89,17 @@ class PodcastHandler extends ActionHandler
 		$pubDate= $channel->addChild( 'lastBuildDate', HabariDateTime::date_create( $max_time )->get( 'r' ) );
 		$generator= $channel->addChild( 'generator', 'Habari ' . Version::get_habariversion() . ' http://habariproject.org/' );
 
-		$itunes = Options::get( Podcast::OPTIONS_PREFIX . "{$feed_name}_itunes" );
-
 		$itunes_author = $channel->addChild( 'xmlns:itunes:author', $itunes['author'] );
 		$itunes_subtitle = $channel->addChild( 'xmlns:itunes:subtitle', $itunes['subtitle'] );
 		$itunes_summary = $channel->addChild( 'xmlns:itunes:summary', $itunes['summary'] );
+		$itunes_summary = $channel->addChild( 'description', $itunes['summary'] );
 		$itunes_owner = $channel->addChild( 'xmlns:itunes:owner' );
 		$itunes_owner_name = $itunes_owner->addChild( 'xmlns:itunes:name', $itunes['owner_name'] );
 		$itunes_owner_email = $itunes_owner->addChild( 'xmlns:itunes:email', $itunes['owner_email'] );
 		$itunes_explicit = $channel->addChild( 'xmlns:itunes:explicit', $itunes['explicit'] );
 		$itunes_image = $channel->addChild( 'xmlns:itunes:image' );
 		$itunes_image->addAttribute( 'href', $itunes['image'] );
-		if( strlen( $itunes['main_category'] ) ) {
+		if( trim( $itunes['main_category'] ) != '' ) {
 			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
 			$categories = explode( ':', $itunes['main_category'] );
 			$itunes_category->addAttribute( 'text', $categories[0] );
@@ -102,7 +108,7 @@ class PodcastHandler extends ActionHandler
 				$child->addAttribute( 'text', $categories[1] );
 			}
 		}
-		if( isset( $itunes['category_2'] ) ) {
+		if( trim( $itunes['category_2'] ) != '' ) {
 			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
 			$categories = explode( ':', $itunes['category_2'] );
 			$itunes_category->addAttribute( 'text', $categories[0] );
@@ -111,7 +117,7 @@ class PodcastHandler extends ActionHandler
 				$child->addAttribute( 'text', $categories[1] );
 			}
 		}
-		if( strlen( $itunes['category_3'] ) ) {
+		if( trim( $itunes['category_3'] ) != '' ) {
 			$itunes_category = $channel->addChild( 'xmlns:itunes:category' );
 			$categories = explode( ':', $itunes['category_3'] );
 			$itunes_category->addAttribute( 'text', $categories[0] );
@@ -144,7 +150,7 @@ class PodcastHandler extends ActionHandler
 			if ( $post instanceof Post ) {
 				// remove Podpress detritus
 				$content = preg_replace( '%\[display_podcast\]%', '', $post->content );
-				// experimental elimination of podcast links from feed
+				// eliminate podcast links from feed
 				preg_match_all( '%<a href="(.*)(" rel="enclosure">)(.*)</a>%i', $content, $matches );
 
 				$count = count( $matches[1] );
@@ -161,8 +167,12 @@ class PodcastHandler extends ActionHandler
 				$guid->addAttribute( 'isPermaLink', 'false' );
 
 				extract( (array)$post->info->$feed_name );
+
+				// create a url
+				$episode = URL::get( 'podcast_media', array( 'podcast_name' => $feed_name, 'post_name' => $post->slug, 'method' => 'feed', 'filename' => rawurlencode( basename( $enclosure ) ) ) );
+
 				$itunes_enclosure = $item->addChild( 'enclosure' );
-				$itunes_enclosure->addAttribute( 'url', $enclosure );
+				$itunes_enclosure->addAttribute( 'url', $episode );
 				$itunes_enclosure->addAttribute( 'length', $size );
 				$itunes_enclosure->addAttribute( 'type', 'audio/mpeg' );
 
