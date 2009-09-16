@@ -45,9 +45,13 @@ class MP3Info
 		if( ! $tmp ) {
 			return FALSE;
 		}
-		$this->size = filesize( $tmp );
 
-		$fh = fopen( $tmp, 'r' );
+		$fh = @fopen( $tmp, 'rb' );
+		if( ! $fh ) {
+			return FALSE;
+		}
+
+		$this->size = filesize( $tmp );
 
 		$ch = fgetc( $fh );
 		while( $pos < $this->size ) {
@@ -201,6 +205,7 @@ class MP3Info
 	protected function get_file( $file_name )
 	{
 		if( $this->is_local_file( $file_name ) ) {
+			EventLog::log('local file');
 			return $this->get_local( $file_name );
 		}
 		else if( ini_get( 'allow_url_fopen' ) ) {
