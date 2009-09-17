@@ -1,0 +1,347 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Podcast\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-09-16 22:12-0500\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Rick Cockrum <rickcockrum@gmail.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-Country: UNITED STATES\n"
+"X-Poedit-Basepath: c:/web/htdocs/www/user/\n"
+"X-Poedit-KeywordsList: _t;_e;_n;_ne\n"
+"X-Poedit-SearchPath-0: plugins/podcast\n"
+
+#: plugins/podcast/podcast.plugin.php:194
+msgid "Podcast"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:195
+msgid "Podcasts"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:282
+msgid "Add Feed"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:283
+msgid "New Feed Name:"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:284
+msgid "New Feed Type:"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:293
+#: plugins/podcast/podcast.plugin.php:341
+msgid "Manage Feeds"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:294
+msgid "<p>Uncheck the feeds that you wish to delete.</p>"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:295
+msgid "Feeds"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:300
+#: plugins/podcast/podcast.plugin.php:317
+#: plugins/podcast/podcast.plugin.php:773
+msgid "Submit"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:307
+msgid "Choose Player "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:310
+msgid "Nifty Player Settings"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:311
+msgid "Background color (hex value, e.g. ffffff)"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:312
+#: plugins/podcast/podcast.plugin.php:315
+msgid "Player Width (pixels)"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:313
+#: plugins/podcast/podcast.plugin.php:316
+msgid "Player Height (pixels)"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:314
+msgid "Xspf Player Settings"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:337
+#, php-format
+msgid "Configure %s"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:340
+msgid "Configure Player"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:381
+msgid "Podcasting"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:392
+msgid "You must create a feed first.<ol><li>Go to the plugins page and select 'Manage Feeds' from the Podcast plugins droplist.</li><li>Create a feed.</li>.</ol>After doing so you can begin to create podcast posts."
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:457
+#, php-format
+msgid "<a href=\"%s\" >Download Postcast</a>"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:490
+#, php-format
+msgid "<p><a href=\"%s\" ><small>Download Podcast</small></a></p>"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:722
+#, php-format
+msgid "Edit %s iTunes Channel Settings"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:725
+msgid "Podcast Author * : "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:729
+msgid "Podcast Title: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:732
+msgid "Podcast Subtitle: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:735
+msgid "Podcast Summary * : "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:739
+msgid "Podcast Owner Name * : "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:743
+msgid "Podcast Owner EMail: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:747
+msgid "Content Rating: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:751
+msgid "Podcast Artwork URL: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:755
+msgid "Podcast Category * : "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:760
+#: plugins/podcast/podcast.plugin.php:764
+msgid "Podcast Category: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:768
+msgid "Block Podcast: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:771
+msgid "New podcast url: "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:825
+msgid "Display Settings"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:829
+msgid "Show player instead of link"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:833
+msgid "Show download link under player"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:837
+msgid "Settings for "
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:841
+msgid "Podcast Enclosure * :"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:846
+msgid "Subtitle:"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:850
+msgid "Content Rating:"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:856
+msgid "Summary:"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:860
+msgid "Block:"
+msgstr ""
+
+#: plugins/podcast/podcast.plugin.php:905
+msgid ""
+"<p><strong>If you are upgrading your Podcast plugin, it is recommended that you deactivate, then reactivate the plugin to set new default values. All your current feed settings will be preserved.</strong></p>\n"
+"<h3>Usage</h3>\n"
+"<h4>General</h4>\n"
+"<p>When Podcast is activated, it creates a new content type called, naturally enough, podcast. You will see a new menu item under the admin menu's 'New' submenu to create podcast posts, and a new menu item under the 'Manage' submenu to manage podcast posts.</p>\n"
+"<p>Podcast has three main screens for configuration. Two of these, 'Manage Feeds' and 'Edit feed' are located on the plugins page of the admin area and are used to manage and edit your podcast feeds. The third is located on the post publish page and is reached by clicking the 'Enclosures' tab under the tags area when you are creating or editing a podcast post.</p>\n"
+"<h4>Manage Feeds</h4>\n"
+"<p>Podcast is able to create and maintain as many feeds as you wish, a capability you may know as category casting. To create or delete a podcast feed use this configuration form.</p>\n"
+"<ol>\n"
+"<li>Navigate to the Plugins page of the admin area.</li>\n"
+"<li>Select 'Manage Feeds' from the Podcast dropdown menu. The feed management form will open up. To create a new feed\n"
+"\t<ol>\n"
+"\t<li>type in the feed's name in the top edit box</li>\n"
+"\t<li>select the feed type from the next select box</li>\n"
+"\t<li>click the 'Save' button. Currently iTunes is the only feed type available.</li>\n"
+"\t</ol>\n"
+"\tTo delete a feed you no longer want\n"
+"\t<ol>\n"
+"\t<li>uncheck the feed you want to delete at the bottom of the form.</li>\n"
+"\t</li>click the 'Save' button.</li>\n"
+"\t</ol>\n"
+"</li>\n"
+"</ol>\n"
+"<h4>Edit feed</h4>\n"
+"<p>Once you have created a feed, a new option will be added to the Podcast plugin's dropdown menu, 'Edit name_of_feed feed'. There will be a menu item added for each feed you create. Several items are required. Their labels have an asterisk ( * ) at the end. Without filling in these items, your changes will not be saved. To edit a feed's options</p>\n"
+"<ol>\n"
+"<li>Navigate to the Plugins page of the admin area.</li>\n"
+"<li>Select 'Edit name_of_feed feed' from the Podcast dropdown menu. A configuration form for the selected feed will open up. The options in the form will relate to the type of feed you are creating. For now, this means iTunes feed options. For iTunes the following options are available:\n"
+"\t<ol>\n"
+"\t<li>Podcast Author - defaults to the current user's display name</li>\n"
+"\t<li>Podcast Subtitle - defaults to the blog's tagline</li>\n"
+"\t<li>Podcast Summary = defaults to the blog's tagline</li>\n"
+"\t<li>Podcast Owner Name - defaults to the current user's display name</li>\n"
+"\t<li>Podcast Owner Email = defaults to the current user's email</li>\n"
+"\t<li>Content Rating - defaults to 'No Rating'.</li>\n"
+"\t<li>Podcast Artwork URL  - enter the url for the artwork to supply to iTunes. These needs to be an image no larger than 300 x 300 pixels</li>\n"
+"\t<li>Podcast Category - Choose the appropriate categories from the select boxes. You need to select at least one, and can have up to three</li>\n"
+"\t<li>Block Podcast - defaults to unchecked. Do not check this unless you want to block your podcast from iTunes</li>\n"
+"\t<li>New podcast url - if you move your feed to a new url, you need to notify iTunes. do so by entering the new url in this field</li>\n"
+"\t</ol>\n"
+"</li>\n"
+"</ol>\n"
+"<p>When you are done making the changes you desire, click the \\'Save\\' button. A message will pop up in the messages area of the admin to notify you when you have successfully edited the feed options.</p>\n"
+"<h4>Creating and Editing a Podcast Post</h4>\n"
+"<p>After you have the feed set up, you are ready to begin creating posts for your podcast. To do so select New->Podcast from the admin's main menu. You will be taken to a publish page that, for the most part, is like a normal entry's publish page. Write a post as you normally would, complete with title, content, and tags, then you'll be ready to add the podcast specific items. If you have uploaded you audio files to a directory accessible to the Habari media silo, you'll find your work is much easier.</p>\n"
+"<p>1. Click on the location in your post where you want the podcast player to appear, then open the Habari silo and navigate to the directory containing your audio file. While audio files currently don't have an associated icon, you'll see their title's listed, and will note that underneath each a menu item has been added that says 'add to name_of_feed'. Click the 'add to ..' item to insert a link to the file in your post where you last had the cursor. The link added will have the format</p>\n"
+"<p>&lt;a href=\"http://url/path/to/file/filename.mp3\" rel=\"enclosure\"&lt;filename.mp3&lt;/a&gt></p>\n"
+"<p>Note: There are two important points here. First, the link must have the rel=\"enclosure\" attribute. The Podcast plugin relies on this when determining what links to replace with a player. Second, if your audio files are hosted externally, you won't be able to use the silo and will have to enter this link by hand.</p>\n"
+"<p>If you have more than one feed, you can use a post in as many of them as you like. You can either add the same audio file for each feed, or add more than one audio file to the post in the position you desire, with whichever feeds you want. Having more than one audio file in a post won't interfere with the individual feeds. Each will contain only the appropriate audio file. However, in the post as viewed on your blog, a player will appear for each feed and each file. Please note that the last link entered for each feed from the Habari silo in this manner will be the only one to be added to the actual podcast feed.</p>\n"
+"<p>2. Click the 'Enclosures' tab underneath the tags area. A form will open containing the options for the player display settings and for each indivdual feed that you have created for your site, one set of feed options after the other. For the display settings the options include\n"
+"<ul>\n"
+"<li>Show player instead of link - Checked by default. Uncheck to not show a player for the podcast in your post. Instead, a link to download the podcast will be shown.</li>\n"
+"<li>Show download link under player - Uncheck to not show a download link for the podcast if a player is shown for it.</li>\n"
+"</ul>\n"
+"\n"
+"For iTunes feeds the settings include\n"
+"<ul>\n"
+"<li>Podcast Enclosure - this is the name of the audio file you are using for the feed. If you placed the file in the post with the Habari silo, this will have been automatically filled in for you. If not, enter it manually, being sure to enter a fully qualified url. This is the only required item.</li>\n"
+"<li>Subtitle - if you want the post to have a subtitle, enter it here</li>\n"
+"<li>Content Rating - this defaults to 'No Rating'. use this setting to override the feed rating for that particular post</li>\n"
+"<li>Summary - if you wish to have a summary for the post, enter it here</li>\n"
+"<li>Block - if you wish to block a particular post from iTunes, check this item</li>\n"
+"</ul>\n"
+"</p>\n"
+"<p>If the post is being added to more than one feed, continue on to make desired changes for each feed. After you are completely done, click the 'Save' button to save the post as a draft or to save any changes to an already published post, or click the 'Publish' button to publish the post. When you do so, the Podcast plugin will add any tags for the post to its iTunes keywords, calculate the length of the audio file for each feed, and calculate the running time for each audio file. These calculations can cause Podcast posts to take a little longer to save than regular entries, especially if the audio files are hosted on an external server.</p>\n"
+"<p>Note: If you haven't set up a feed, there will be no links in the Habari media silo to insert a podcast into a post. Nor will there be any controls under the Enclosures tab to set information regarding the podcast's enclosures. There will only appear text directing you to create a feed.</p>\n"
+"<h4>Accessing Podcasts From Your Site</h4>\n"
+"<p>The Podcast plugin makes several changes to your blog\n"
+"<ul>\n"
+"<li><b>Home page</b> - Podcast posts show up on your home page intermixed with regular entries.</li>\n"
+"<li><b>Multiple post archives</b> - Podcast posts show up in your tag urls intermixed with regular entries.</li>\n"
+"<li><b>Podcast urls</b> - Podcasts are accessible by using an archive url of the form http://yoursite.com/podcast/name_of_podcast. This will contain only posts that have been assigned to the named podcast.</li>\n"
+"<li><b>Feed urls</b> - Podcast feeds are accessible by using a url of the form http://yoursite.com/podcast/name_of_podcast/rss for an RSS-2 feed. The feed will contain only feed item versions of posts that have been assigned to the named podcast.</li>\n"
+"</ul>\n"
+"</p>\n"
+"<h4>Podcast Templates</h4>\n"
+"<p>Podcast comes with four templates one each for an individual podcast post and for multiple podcast post pages, for both the rawphpengine and the hiengine. These will probably not fit with the theme of your blog, so it is recommended that you copy them to your theme directory and modify them as needed.</p>\n"
+"<h4>The Players</h4>\n"
+"<p>Podcast provides two flash players, the nifty player and the slim version of the xspf player. It uses the chosen player to enable playing podcast audio files on your site. When a podcast post is viewed, the plugin searches it's content and replaces all links with the rel=\"enclosure\" attribute with a player and a link to download the file. Thus, if you have multiple audio file links in the post, a separate player will be embedded for each of them.</p>\n"
+"<p>To configure the players\n"
+"<ol>\n"
+"<li>Select 'Configure Players' from Podcast's droplist on the plugin page of the admin area.</li>\n"
+"<li>Choose which player you wish to use. The default is the niftyplayer.</li>\n"
+"<li>Set the options for the selected player. For both players you can set the height and width. The default values are reasonable for most sites. For the niftyplayer you can set the background color to more closely match your site using hex RGB colors. A hex RGB color consists of 6 digits. The left two denote the degree of red, the middle two the degree of green, and the right two the degree of blue. Each digit is a hexadecimal numeral from 0 - F. The default results in a white background.</li>\n"
+"</ol>\n"
+"</p>\n"
+"<h4>Uninstallation</h4>\n"
+"<ol>\n"
+"<li>Got to the plugins page of your Habari admin panel.</li>\n"
+"<li>Click on the Deactivate button.</li>\n"
+"<li>Delete the Podcast directory from your user/plugins directory.</li>\n"
+"</ol>"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:11
+#: plugins/podcast/templates/rawphp/podcast.single.php:13
+msgid "Edit post"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:11
+msgid "Edit"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:19
+msgid "Tagged:"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:21
+msgid "Comments on this post"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:21
+msgid "Comment"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:29
+msgid "Older"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.multiple.php:29
+msgid "Newer"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.single.php:11
+msgid "Posted by"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.single.php:11
+msgid "on"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.single.php:23
+msgid "This entry is filed under"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.single.php:25
+msgid "You can follow any responses to this entry through the"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.single.php:28
+msgid "or leave you own"
+msgstr ""
+
+#: plugins/podcast/templates/rawphp/podcast.single.php:30
+msgid "New comments are currently closed."
+msgstr ""
+
