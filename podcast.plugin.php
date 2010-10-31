@@ -116,14 +116,6 @@ class Podcast extends Plugin
 	);
 
 	/**
-	 * Add update beacon support
-	 **/
-	public function action_update_check()
-	{
-	 	Update::add( 'Podcast', 'DA241F86-AA81-11DD-B868-811556D89593', $this->info->version );
-	}
-
-	/**
 	 * Redirects the link from an embedded player, feed, or an html
 	 * download link to the actual file
 	 *
@@ -144,7 +136,8 @@ class Podcast extends Plugin
 		// feed - from a feed
 		$method = $handler->handler_vars['method'];
 
-		$info = $post->info->{$podcast};
+//		$info = $post->info->{$podcast};
+		$info = $post->info->{"$podcast"};
 		if( !empty( $info ) && isset( $info['enclosure'] ) ) {
 			$filename = $handler->handler_vars['filename'];
 			$url = dirname( $info['enclosure'] ) . '/' . $filename;
