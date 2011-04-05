@@ -182,7 +182,7 @@ class PodcastHandler extends ActionHandler
 				$itunes_duration = $item->addChild( 'xmlns:itunes:duration', $duration );
 				$itunes_explicit = $item->addChild( 'xmlns:itunes:explicit', $rating );
 				if( count( $post->tags ) ) {
-					$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', implode( ', ', $post->tags ) );
+					$itunes_keywords = $item->addChild( 'xmlns:itunes:keywords', implode( ', ', (array)$post->tags ) );
 				}
 				$itunes_block = $item->addChild( 'xmlns:itunes:block', $block ? 'Yes' : 'No' );
 
