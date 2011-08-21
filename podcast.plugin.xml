@@ -8,5 +8,8 @@
 	<author url="http://habariproject.org/">The Habari Community</author>
 	<url>http://habariproject.org/</url>
 	<description><![CDATA[Provides podcasting functionality and iTunes compatibility.]]></description>
+	<provides>
+		<feature url="http://wiki.habariproject.org/en/Feature/podcast">podcast</feature>
+	</provides>
 </pluggable>
  
