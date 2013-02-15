@@ -520,8 +520,11 @@ MEDIAJS;
 	*
 	* @return string The new path containing the template being searched for
 	*/
-	public function filter_include_template_file( $template_path, $template_name, $class )
+	public function filter_include_template_file( $template_path, $template_name, $class = null )
 	{
+		if ( ! isset( $class ) ) {
+			return $template_path;
+		}
 		if ( in_array( $template_name, array( 'podcast.single', 'podcast.multiple' ) ) ) {
 			if ( ! file_exists( $template_path ) ) {
 				switch ( strtolower($class) ) {
@@ -544,7 +547,6 @@ MEDIAJS;
 				}
 			}
 		}
-
 		return $template_path;
 	}
 
