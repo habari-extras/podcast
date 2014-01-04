@@ -36,6 +36,7 @@ class Podcast extends Plugin
 	private $players = array(
 		'niftyplayer' => 'Niftyplayer',
 		'xspf' => 'xspf',
+		'html5' => 'Html 5',
 	);
 
 	private $itunes_rating = array(
@@ -136,7 +137,6 @@ class Podcast extends Plugin
 		// feed - from a feed
 		$method = $handler->handler_vars['method'];
 
-//		$info = $post->info->{$podcast};
 		$info = $post->info->{"$podcast"};
 		if( !empty( $info ) && isset( $info['enclosure'] ) ) {
 			$filename = $handler->handler_vars['filename'];
@@ -444,6 +444,7 @@ MEDIAJS;
 			}
 		}
 
+		$parts = pathinfo( $options['enclosure'] );
 		$download_url = URL::get( 'podcast_media', array( 'podcast_name' => $feed, 'post_name' => $this->current_post->slug, 'method' => 'download', 'filename' => rawurlencode( basename( $options['enclosure'] ) ) ) );
 
 		if( isset( $options['show_player'] ) && $options['show_player'] === FALSE  ) {
@@ -454,7 +455,6 @@ MEDIAJS;
 			$title = $options['subtitle'];
 		}
 		else {
-			$parts = pathinfo( $options['enclosure'] );
 			$title = $parts['filename'];
 		}
 
@@ -471,11 +471,21 @@ MEDIAJS;
 
 			case 'niftyplayer':
 				$player = '<object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" width="165" height="38" id="niftyPlayer1" align="">';
-				$player .= '<param name=movie value="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $embed_url . '&as=0">';
+				$player .= '<param name="movie" value="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $embed_url . '&as=0">';
 				$player .= '<param name="quality" value="high">';
 				$player .= '<param name="bgcolor" value="#' . Options::get( self::OPTIONS_PREFIX . 'nifty_background' ) . '">';
 				$player .= '<embed src="' . $this->get_url() . '/players/niftyplayer/niftyplayer.swf?file=' . $embed_url . '&as=0" quality="high" bgcolor="#' . Options::get( self::OPTIONS_PREFIX . 'nifty_background' ) . '" width="' . Options::get( self::OPTIONS_PREFIX . 'nifty_width' ) . '" height="' . Options::get( self::OPTIONS_PREFIX . 'nifty_height' ) . '" name="niftyPlayer1" align="" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer"></embed>';
 				$player .= '</object>';
+				break;
+
+			case 'html5' :
+				$player = '<p><audio controls >';
+				$player .= '<source src="' . $embed_url . '" type="' . Utils::mimetype( $embed_url ) . '" />';
+				if ($parts['extension'] == 'mp3' ) {
+					$ogg_url = $parts['dirname'] . DIRECTORY_SEPARATOR . $parts['filename'] . '.ogg';
+					$player .= '<source src="' . $ogg_url . '" type="' . Utils::mimetype($ogg_url) . '"  />';
+				}
+				$player .= '</audio></p>';
 				break;
 		}
 

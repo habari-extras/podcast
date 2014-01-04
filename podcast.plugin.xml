@@ -58,7 +58,7 @@
 <h4>Creating and Editing a Podcast Post</h4>
 <p>After you have the feed set up, you are ready to begin creating posts for your podcast. To do so select New->Podcast from the admin's main menu. You will be taken to a publish page that, for the most part, is like a normal entry's publish page. Write a post as you normally would, complete with title, content, and tags, then you'll be ready to add the podcast specific items. If you have uploaded you audio files to a directory accessible to the Habari media silo, you'll find your work is much easier.</p>
 <p>1. Click on the location in your post where you want the podcast player to appear, then open the Habari silo and navigate to the directory containing your audio file. While audio files currently don't have an associated icon, you'll see their title's listed, and will note that underneath each a menu item has been added that says 'add to name_of_feed'. Click the 'add to ..' item to insert a link to the file in your post where you last had the cursor. The link added will have the format</p>
-<p>&lt;a href=\"http://url/path/to/file/filename.mp3\" rel=\"enclosure\"&lt;filename.mp3&lt;/a&gt></p>
+<p>&lt;a href=\"http://url/path/to/file/filename.mp3\" rel=\"enclosure\"&lt;filename.mp3&lt;/a&gt>/p>
 <p>Note: There are two important points here. First, the link must have the rel=\"enclosure\" attribute. The Podcast plugin relies on this when determining what links to replace with a player. Second, if your audio files are hosted externally, you won't be able to use the silo and will have to enter this link by hand.</p>
 <p>If you have more than one feed, you can use a post in as many of them as you like. You can either add the same audio file for each feed, or add more than one audio file to the post in the position you desire, with whichever feeds you want. Having more than one audio file in a post won't interfere with the individual feeds. Each will contain only the appropriate audio file. However, in the post as viewed on your blog, a player will appear for each feed and each file. Please note that the last link entered for each feed from the Habari silo in this manner will be the only one to be added to the actual podcast feed.</p>
 <p>2. Click the 'Enclosures' tab underneath the tags area. A form will open containing the options for the player display settings and for each indivdual feed that you have created for your site, one set of feed options after the other. For the display settings the options include
@@ -90,14 +90,15 @@ For iTunes feeds the settings include
 <h4>Podcast Templates</h4>
 <p>Podcast comes with four templates one each for an individual podcast post and for multiple podcast post pages, for both the rawphpengine and the hiengine. These will probably not fit with the theme of your blog, so it is recommended that you copy them to your theme directory and modify them as needed.</p>
 <h4>The Players</h4>
-<p>Podcast provides two flash players, the nifty player and the slim version of the xspf player. It uses the chosen player to enable playing podcast audio files on your site. When a podcast post is viewed, the plugin searches it's content and replaces all links with the rel=\"enclosure\" attribute with a player and a link to download the file. Thus, if you have multiple audio file links in the post, a separate player will be embedded for each of them.</p>
-<p>To configure the players
+<p>Podcast provides two flash players, the nifty player and the slim version of the xspf player, as well as allowing you the option of using the Html 5 player that modern browsers have built in. It uses the chosen player to enable playing podcast audio files on your site. When a podcast post is viewed, the plugin searches it's content and replaces all links with the rel=\"enclosure\" attribute with a player and a link to download the file. Thus, if you have multiple audio file links in the post, a separate player will be embedded for each of them.</p>
+<p>To configure the flash players
 <ol>
 <li>Select 'Configure Players' from Podcast's droplist on the plugin page of the admin area.</li>
 <li>Choose which player you wish to use. The default is the niftyplayer.</li>
 <li>Set the options for the selected player. For both players you can set the height and width. The default values are reasonable for most sites. For the niftyplayer you can set the background color to more closely match your site using hex RGB colors. A hex RGB color consists of 6 digits. The left two denote the degree of red, the middle two the degree of green, and the right two the degree of blue. Each digit is a hexadecimal numeral from 0 - F. The default results in a white background.</li>
 </ol>
 </p>
+ <p>There is no configuration for the Html 5 player. However, many browsers under Linux are not able to natively play mp3 files through the Html 5 player, so you will also need to provide an ogg audio file. These are easiest to obtain by using a program such as OggConvert to create the ogg file from the mp3. It will retain the same name as your mp3, just with the 'ogg' extension. Upload it to the same directory in which you have your mp3 files, and Podcast will take care of the rest.</p>
 <h4>Uninstallation</h4>
 <ol>
 <li>Got to the plugins page of your Habari admin panel.</li>
