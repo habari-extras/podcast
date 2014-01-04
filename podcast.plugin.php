@@ -116,6 +116,18 @@ class Podcast extends Plugin
 		'TV & Film',
 	);
 
+	public function filter_get_mime_type( $mimetype, $filename )
+	{
+		$file_parts = pathinfo( $filename );
+		if( $file_parts['extension'] == 'mp3' ) {
+			$mimetype = 'audio/mpeg3';
+		}
+		elseif( $file_parts['extension'] == 'ogg' ) {
+			$mimetype = 'audio/ogg';
+		}
+		return $mimetype;
+	}
+
 	/**
 	 * Redirects the link from an embedded player, feed, or an html
 	 * download link to the actual file
