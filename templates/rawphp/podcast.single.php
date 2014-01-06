@@ -8,8 +8,8 @@
 
 	<div id="post-<?php echo $post->id; ?>" class="<?php echo $post->statusname; ?>">
 		<h1><a href="<?php echo $post->permalink; ?>" rel="bookmark" title="<?php echo $post->title; ?>"><?php echo $post->title_out; ?></a></h1>
-		<div class="pubMeta"><?php _e( 'Posted by' ); ?> <?php echo $post->author->displayname; ?> <?php _e( 'on' ); ?> <?php echo $post->pubdate_out; ?></div>
-		<?php if ( $user ) { ?>
+		<div class="pubMeta"><?php _e( 'Posted by' ); ?> <?php echo $post->author->displayname; ?> <?php _e( 'on' ); ?> <?php echo $post->pubdate->date; ?></div>
+		<?php if ( $loggedin ) { ?>
 			<div class="edit"><a href="<?php URL::out( 'admin', 'page=publish&slug=' . $post->slug); ?>" title="<?php _e( 'Edit post' ); ?>"><?php _e( 'Edit post' ); ?></a></div>
 		<?php } ?>
 		<div class="entry">
@@ -27,7 +27,7 @@
 			<?php if ( !$post->info->comments_disabled ) { ?>
 				<?php _e( 'or leave you own' ); ?> <a href="#comments_form">comment</a>.
 			<?php } elseif ( $post->info->comments_disabled ) { ?>
-				. <?php _e( 'New comments are currently closed.' ); ?>
+				. <?php _e( 'New comments are closed.' ); ?>
 			<?php } ?>
 		</p>
 	</div><!-- end entryMeta -->

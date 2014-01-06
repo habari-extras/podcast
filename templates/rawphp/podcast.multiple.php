@@ -5,8 +5,8 @@
 
 		<div id="post-<?php echo $post->id; ?>" class="<?php echo $post->statusname; ?>">
 			<h2><a href="<?php echo $post->permalink; ?>" rel="bookmark" title="<?php echo $post->title; ?>"><?php echo $post->title_out; ?></a></h2>
-			<div class="pubMeta"><?php echo $post->pubdate_out; ?></div>
-			<?php if ( $user ) { ?>
+			<div class="pubMeta"><?php echo $post->pubdate->date; ?></div>
+			<?php if ( $loggedin ) { ?>
 				<div class="edit">
 					<a href="<?php URL::out( 'admin', 'page=publish&slug=' . $post->slug); ?>" title="<?php _e( 'Edit post' ); ?>"><?php _e( 'Edit' ); ?></a>
 				</div>

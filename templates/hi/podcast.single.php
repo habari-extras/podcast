@@ -7,29 +7,27 @@
 	</div>
 	<div id="post-{hi:post.id}" class="{hi:post.statusname}">
 		<h1><a href="{hi:post.permalink}" rel="bookmark" title="{hi:post.title}">{hi:post.title_out}</a></h1>
-		<div class="pubMeta"><?php _e( 'Posted by' ); ?> {hi:post.author.displayname} <?php _e( 'on' ); ?> {hi:post.pubdate_out}</div>
-		<?php if ( $user instanceOf User ) { ?>
-			<div class="edit"><a href="{hi:post.editlink}" title="<?php _e( 'Edit post' ); ?>"><?php _e( 'Edit post' ); ?></a></div>
+		<div class="pubMeta">{hi:"Posted by"} {hi:post.author.displayname} {hi:"on"} {hi:post.pubdate.date}</div>
+		<?php if ( $loggedin ) { ?>
+			<div class="edit"><a href="{hi:post.editlink}" title="{hi:"Edit post"}">{hi:"Edit post"}</a></div>
 		<?php } ?>
 		<div class="entry">
 			{hi:post.content_out}
 		</div><!-- end entry -->
-
-		<script src="http://feeds.feedburner.com/~s/SagRising?i={hi:post.permalink}" type="text/javascript" charset="utf-8"></script>
 
 	</div><!-- end id post-* -->
 
 	<div class="entryMeta">	
 		<p>
 			{hi:?count(post.tags)}
-				<?php _e( 'This entry is filed under' ); ?> {hi:post.tags_out}. 
+				{hi:"This entry is filed under"} {hi:post.tags_out}. 
 			{/hi:?}
-			<?php _e( 'You can follow any responses to this entry through the' ); ?>
-			<a href="{hi:post.comment_feed_link}"> feed</a>
+			{hi:"You can follow any responses to this entry through the"}
+			<a href="{hi:post.comment_feed_link}"> {hi:"feed"}</a>
 			{hi:?post.info.comments_disabled = 0}
-				<?php _e( 'or leave you own' ); ?> <a href="#comments_form">comment</a>.
+				{hi:"or leave you own"} <a href="#comments_form">{hi:"comment"}</a>.
 			{hi:?else?}
-				. <?php _e( 'New comments are currently closed.' ); ?>
+				. {hi:"New comments are closed."}
 			{/hi:?}
 		</p>
 	</div><!-- end entryMeta -->
