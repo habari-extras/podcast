@@ -16,7 +16,7 @@
 			</div>
 			<div class="meta">
 				<?php if ( count( $post->tags ) ) { ?>
-					<div class="tags"><?php _e( 'Tagged:' ); ?> <?php echo $post->tags_out; ?></div>
+					<div class="tags"><?php _e( 'Tagged:' ); ?> <?php echo Format::tag_and_list($post->tags, ', ', ', and '); ?></div>
 				<?php } ?>
 				<div class="commentCount"><a href="<?php echo $post->permalink; ?>#comments" title="<?php _e( 'Comments on this post' ); ?>"><?php echo $post->comments->approved->count; ?> <?php echo _n( 'Comment', 'Comments', $post->comments->approved->count ); ?></a></div>
 			</div><br>

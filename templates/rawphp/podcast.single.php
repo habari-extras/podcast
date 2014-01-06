@@ -20,7 +20,7 @@
 	<div class="entryMeta">	
 		<p>
 			<?php if ( count( $post->tags ) ) { ?>
-				<?php _e( 'This entry is filed under' ); ?> <?php echo $post->tags_out; ?>. 
+				<?php _e( 'This entry is filed under' ); ?> <?php echo Format::tag_and_list($post->tags, ', ', ', and '); ?>. 
 			<?php } ?>
 			<?php _e( 'You can follow any responses to this entry through the' ); ?>
 			<a href="<?php echo $post->comment_feed_link; ?>"> feed</a>

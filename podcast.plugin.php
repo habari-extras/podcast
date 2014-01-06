@@ -916,6 +916,14 @@ MEDIAJS;
 		$post->info->$feed = $options;
 
 	}
+
+	public function theme_post_tags( $theme )
+	{
+		if( isset( $theme->post ) ) {
+			return Format::tag_and_list($theme->post->tags, ', ', ', and ');
+		}
+	}
+
 }
 
 ?>

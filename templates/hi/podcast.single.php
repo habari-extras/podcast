@@ -20,7 +20,7 @@
 	<div class="entryMeta">	
 		<p>
 			{hi:?count(post.tags)}
-				{hi:"This entry is filed under"} {hi:post.tags_out}. 
+				{hi:"This entry is filed under"} {hi:@post_tags_out}. 
 			{/hi:?}
 			{hi:"You can follow any responses to this entry through the"}
 			<a href="{hi:post.comment_feed_link}"> {hi:"feed"}</a>
