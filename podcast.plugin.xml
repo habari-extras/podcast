@@ -98,7 +98,7 @@ For iTunes feeds the settings include
 <li>Set the options for the selected player. For both players you can set the height and width. The default values are reasonable for most sites. For the niftyplayer you can set the background color to more closely match your site using hex RGB colors. A hex RGB color consists of 6 digits. The left two denote the degree of red, the middle two the degree of green, and the right two the degree of blue. Each digit is a hexadecimal numeral from 0 - F. The default results in a white background.</li>
 </ol>
 </p>
- <p>There is no configuration for the Html 5 player. However, many browsers under Linux are not able to natively play mp3 files through the Html 5 player, so you will also need to provide an ogg audio file. These are easiest to obtain by using a program such as OggConvert to create the ogg file from the mp3. It will retain the same name as your mp3, just with the 'ogg' extension. Upload it to the same directory in which you have your mp3 files, and Podcast will take care of the rest.</p>
+ <p>There is no configuration for the Html 5 player. However, many browsers under Linux are not able to natively play mp3 files through the Html 5 player, so you will also need to provide an ogg audio file. These are easiest to obtain by using a program such as OggConvert to create the ogg file from the mp3. It will retain the same name as your mp3, but with the 'ogg' extension. Upload it to the same directory in which you have your mp3 files, and Podcast will take care of the rest.</p>
 <h4>Uninstallation</h4>
 <ol>
 <li>Got to the plugins page of your Habari admin panel.</li>
